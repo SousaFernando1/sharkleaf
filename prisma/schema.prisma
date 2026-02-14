@@ -1,0 +1,210 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// AUTENTICAÇÃO
+// ==========================================
+
+model Usuario {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  senha     String // Hash bcrypt
+  tipo      String   @default("CLIENTE") // ADMIN, CLIENTE
+  clienteId String?  @unique
+  cliente   Cliente? @relation(fields: [clienteId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==========================================
+// PRODUTOR
+// ==========================================
+
+model Produtor {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  telefone  String?
+  endereco  String?
+  descricao String? // Para exibir no perfil público
+  logo      String? // URL da logo
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==========================================
+// CANTEIROS E ESTOQUE
+// ==========================================
+
+model Canteiro {
+  id              String              @id @default(cuid())
+  nome            String
+  capacidade      Int
+  estoques        EstoqueCanteiro[]
+  itensPedido     ItemPedidoCanteiro[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+}
+
+model Produto {
+  id            String            @id @default(cuid())
+  nome          String
+  categoria     String?
+  descricao     String?
+  precoUnitario Float             @default(0)
+  estoques      EstoqueCanteiro[]
+  itensPedido   ItemPedido[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model EstoqueCanteiro {
+  id            String                @id @default(cuid())
+  quantidade    Int                   @default(0)
+  produtoId     String
+  canteiroId    String
+  produto       Produto               @relation(fields: [produtoId], references: [id])
+  canteiro      Canteiro              @relation(fields: [canteiroId], references: [id])
+  movimentacoes MovimentacaoEstoque[]
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  @@unique([produtoId, canteiroId])
+}
+
+model MovimentacaoEstoque {
+  id        String           @id @default(cuid())
+  tipo      String // ENTRADA, SAIDA
+  quantidade Int
+  motivo    String? // AJUSTE_MANUAL, PEDIDO, CANCELAMENTO
+  estoqueId String
+  estoque   EstoqueCanteiro  @relation(fields: [estoqueId], references: [id])
+  pedidoId  String?
+  pedido    Pedido?          @relation(fields: [pedidoId], references: [id])
+  createdAt DateTime         @default(now())
+}
+
+// ==========================================
+// PEDIDOS
+// ==========================================
+
+model Pedido {
+  id            String                @id @default(cuid())
+  status        String                @default("RECEBIDO") // RECEBIDO, PRODUCAO, EMPACOTAMENTO, PRONTO, CANCELADO
+  qrCode        String                @unique
+  ticket        String                @unique // Código alfanumérico curto
+  valorTotal    Float                 @default(0) // Soma de todos os itens
+  desconto      Float?                @default(0) // Desconto em porcentagem (%)
+  codigoBrinde  String? // Código de brinde usado (se houver)
+  pontosGerados Int                   @default(0) // 1 ponto por unidade de produto
+  resgatado     Boolean               @default(false)
+  clienteId     String?
+  cliente       Cliente?              @relation(fields: [clienteId], references: [id])
+  itens         ItemPedido[]
+  escaneamentos EscaneamentoQR[]
+  movimentacoes MovimentacaoEstoque[]
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+}
+
+model ItemPedido {
+  id            String               @id @default(cuid())
+  quantidade    Int // Quantidade total deste produto no pedido
+  precoUnitario Float // Snapshot do preço no momento da compra
+  subtotal      Float // quantidade * precoUnitario
+  pedidoId      String
+  pedido        Pedido               @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  produtoId     String
+  produto       Produto              @relation(fields: [produtoId], references: [id])
+  canteiros     ItemPedidoCanteiro[]
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+}
+
+model ItemPedidoCanteiro {
+  id           String     @id @default(cuid())
+  quantidade   Int // Quantidade deste produto que vem deste canteiro
+  itemPedidoId String
+  itemPedido   ItemPedido @relation(fields: [itemPedidoId], references: [id], onDelete: Cascade)
+  canteiroId   String
+  canteiro     Canteiro   @relation(fields: [canteiroId], references: [id])
+  createdAt    DateTime   @default(now())
+}
+
+// ==========================================
+// RASTREABILIDADE
+// ==========================================
+
+model EscaneamentoQR {
+  id          String   @id @default(cuid())
+  pedidoId    String
+  pedido      Pedido   @relation(fields: [pedidoId], references: [id])
+  clienteId   String?
+  cliente     Cliente? @relation(fields: [clienteId], references: [id])
+  nome        String? // Nome do cliente ou "Visitante"
+  localizacao String? // Cidade/Estado ou coordenadas
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+}
+
+// ==========================================
+// CLIENTES E GAMIFICAÇÃO
+// ==========================================
+
+model Cliente {
+  id            String           @id @default(cuid())
+  nome          String
+  email         String           @unique
+  telefone      String?
+  endereco      String?
+  pontosTotais  Int              @default(0)
+  usuario       Usuario?
+  brindes       Brinde[]
+  pedidos       Pedido[]
+  escaneamentos EscaneamentoQR[]
+  medalhas      MedalhaCliente[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model Brinde {
+  id        String    @id @default(cuid())
+  codigo    String    @unique
+  usado     Boolean   @default(false)
+  usadoEm   DateTime?
+  pedidoId  String? // Pedido onde o código foi usado
+  clienteId String
+  cliente   Cliente   @relation(fields: [clienteId], references: [id])
+  createdAt DateTime  @default(now())
+}
+
+model Medalha {
+  id        String           @id @default(cuid())
+  nome      String
+  descricao String
+  icone     String? // Emoji ou nome do ícone Lucide
+  condicao  String // PRIMEIRO_PEDIDO, FEEDBACK_5, RASTREADOR_10, CLIENTE_FIEL_10, BRINDE_RESGATADO
+  clientes  MedalhaCliente[]
+  createdAt DateTime         @default(now())
+}
+
+model MedalhaCliente {
+  id        String   @id @default(cuid())
+  clienteId String
+  cliente   Cliente  @relation(fields: [clienteId], references: [id])
+  medalhaId String
+  medalha   Medalha  @relation(fields: [medalhaId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([clienteId, medalhaId])
+}
