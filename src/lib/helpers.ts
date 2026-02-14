@@ -84,7 +84,7 @@ export function gerarQRCodeUrl(pedidoId: string): string {
   }
 
   // Fallback
-  const baseUrl = envUrl || `http://localhost:${process.env.PORT || "3000"}`;
+  const baseUrl = nextAuthUrl || `http://localhost:${process.env.PORT || "3000"}`;
   return `${baseUrl}/rastreio/${pedidoId}`;
 }
 

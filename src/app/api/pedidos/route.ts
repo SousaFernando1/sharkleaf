@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { gerarTicket, gerarQRCodeUrl } from "@/lib/helpers";
+import { gerarTicket } from "@/lib/helpers";
 
 interface ItemInput {
   produtoId: string;
@@ -123,22 +123,16 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // 5. Criar pedido
+      // 5. Criar pedido (qrCode armazena apenas o ID — a URL é gerada dinamicamente)
       const novoPedido = await tx.pedido.create({
         data: {
           ticket,
-          qrCode: "", // Será preenchido com o ID
+          qrCode: `pedido_${ticket}`,
           valorTotal,
           desconto: percentDesconto,
           codigoBrinde: codigoBrinde || null,
           pontosGerados: totalUnidades, // 1 ponto por unidade
         },
-      });
-
-      // Atualizar QR Code com a URL contendo o ID do pedido
-      await tx.pedido.update({
-        where: { id: novoPedido.id },
-        data: { qrCode: gerarQRCodeUrl(novoPedido.id) },
       });
 
       // 6. Criar itens do pedido e atualizar estoque
