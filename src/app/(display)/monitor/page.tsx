@@ -7,6 +7,13 @@ import { Leaf } from "lucide-react";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
+const statusConfig: Record<string, { label: string; border: string; bg: string; badgeBg: string }> = {
+  RECEBIDO: { label: "📋 Recebido", border: "border-blue-400", bg: "bg-blue-950/30", badgeBg: "bg-blue-600" },
+  PRODUCAO: { label: "🔄 Em Produção", border: "border-amber-400", bg: "bg-amber-950/30", badgeBg: "bg-amber-600" },
+  EMPACOTAMENTO: { label: "📦 Empacotamento", border: "border-orange-400", bg: "bg-orange-950/30", badgeBg: "bg-orange-600" },
+  PRONTO: { label: "✅ Pronto", border: "border-green-400", bg: "bg-green-950/50", badgeBg: "bg-green-600" },
+};
+
 export default function MonitorPage() {
   const { data: pedidos, isLoading } = useSWR("/api/monitor", fetcher, {
     refreshInterval: 60000, // Atualiza a cada 60 segundos
@@ -36,7 +43,7 @@ export default function MonitorPage() {
       ) : !pedidos || pedidos.length === 0 ? (
         <div className="flex items-center justify-center py-20">
           <p className="text-xl text-green-300">
-            Nenhum pedido em produção no momento
+            Nenhum pedido no momento
           </p>
         </div>
       ) : (
@@ -48,41 +55,32 @@ export default function MonitorPage() {
               status: string;
               cliente: string | null;
               itens: string[];
-            }) => (
-              <Card
-                key={pedido.id}
-                className={`border-2 ${
-                  pedido.status === "PRONTO"
-                    ? "border-green-400 bg-green-950/50"
-                    : "border-amber-400 bg-amber-950/30"
-                }`}
-              >
-                <CardContent className="p-5">
-                  <div className="mb-3 flex items-center justify-between">
-                    <span className="font-mono text-lg font-bold text-white">
-                      #{pedido.ticket}
-                    </span>
-                    <Badge
-                      variant={
-                        pedido.status === "PRONTO" ? "default" : "secondary"
-                      }
-                      className={
-                        pedido.status === "PRONTO"
-                          ? "bg-green-600"
-                          : "bg-amber-600"
-                      }
-                    >
-                      {pedido.status === "PRONTO"
-                        ? "✅ Pronto"
-                        : "🔄 Em Produção"}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-green-200">
-                    {pedido.cliente || "Cliente não definido"}
-                  </p>
-                </CardContent>
-              </Card>
-            )
+            }) => {
+              const config = statusConfig[pedido.status] || statusConfig.RECEBIDO;
+              return (
+                <Card
+                  key={pedido.id}
+                  className={`border-2 ${config.border} ${config.bg}`}
+                >
+                  <CardContent className="p-5">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="font-mono text-lg font-bold text-white">
+                        #{pedido.ticket}
+                      </span>
+                      <Badge
+                        variant="secondary"
+                        className={config.badgeBg}
+                      >
+                        {config.label}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-green-200">
+                      {pedido.cliente || "Cliente não definido"}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            }
           )}
         </div>
       )}

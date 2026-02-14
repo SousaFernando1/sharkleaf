@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const pedidos = await prisma.pedido.findMany({
       where: {
-        status: { in: ["PRODUCAO", "PRONTO"] },
+        status: { not: "CANCELADO" },
       },
       include: {
         itens: {
@@ -14,7 +14,7 @@ export async function GET() {
         cliente: true,
       },
       orderBy: [
-        { status: "asc" }, // PRODUCAO antes de PRONTO
+        { status: "asc" },
         { createdAt: "asc" },
       ],
     });

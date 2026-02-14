@@ -47,7 +47,6 @@ export function PedidoStatusButtons({
         return;
       }
 
-      toast.success(`Status atualizado para: ${statusLabels[novoStatus]}`);
       router.refresh();
     } catch {
       toast.error("Erro ao atualizar status");
