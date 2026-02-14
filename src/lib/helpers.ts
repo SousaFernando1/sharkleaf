@@ -26,52 +26,60 @@ export function gerarCodigoBrinde(): string {
 
 /**
  * Gera a URL do QR Code para um pedido.
- * Sempre usa o IP da rede local para que celulares na mesma rede consigam acessar.
+ * Em produção: usa NEXTAUTH_URL (domínio Vercel).
+ * Em desenvolvimento: detecta o IP da rede local para celulares na mesma Wi-Fi.
  */
 export function gerarQRCodeUrl(pedidoId: string): string {
-  // Prioriza NEXTAUTH_URL se configurada com um IP real (não localhost)
+  // Em produção, sempre usar NEXTAUTH_URL (domínio Vercel)
   const envUrl = process.env.NEXTAUTH_URL || "";
   if (envUrl && !envUrl.includes("localhost")) {
     return `${envUrl}/rastreio/${pedidoId}`;
   }
 
-  // Detecta o IP da rede automaticamente (server-side only)
-  try {
-    const os = require("os");
-    const interfaces = os.networkInterfaces();
+  // Em desenvolvimento, detecta o IP da rede automaticamente (server-side only)
+  if (process.env.NODE_ENV !== "production") {
+    try {
+      const os = require("os");
+      const interfaces = os.networkInterfaces();
 
-    // Nomes de adaptadores virtuais a ignorar
-    const virtualPrefixes = ["vEthernet", "VirtualBox", "VMware", "Docker", "WSL", "br-", "veth"];
+      // Nomes de adaptadores virtuais a ignorar
+      const virtualPrefixes = [
+        "vEthernet",
+        "VirtualBox",
+        "VMware",
+        "Docker",
+        "WSL",
+        "br-",
+        "veth",
+      ];
 
-    let fallbackIP: string | null = null;
+      let fallbackIP: string | null = null;
 
-    for (const name of Object.keys(interfaces)) {
-      const isVirtual = virtualPrefixes.some((p) => name.includes(p));
-      for (const iface of interfaces[name] || []) {
-        if (iface.family === "IPv4" && !iface.internal) {
-          if (!isVirtual) {
-            // Adaptador real (Wi-Fi, Ethernet) — usar imediatamente
-            const port = process.env.PORT || "3000";
-            return `http://${iface.address}:${port}/rastreio/${pedidoId}`;
+      for (const name of Object.keys(interfaces)) {
+        const isVirtual = virtualPrefixes.some((p) => name.includes(p));
+        for (const iface of interfaces[name] || []) {
+          if (iface.family === "IPv4" && !iface.internal) {
+            if (!isVirtual) {
+              const port = process.env.PORT || "3000";
+              return `http://${iface.address}:${port}/rastreio/${pedidoId}`;
+            }
+            if (!fallbackIP) fallbackIP = iface.address;
           }
-          // Guardar IP virtual como fallback
-          if (!fallbackIP) fallbackIP = iface.address;
         }
       }
-    }
 
-    // Usar IP virtual se não encontrou adaptador real
-    if (fallbackIP) {
-      const port = process.env.PORT || "3000";
-      return `http://${fallbackIP}:${port}/rastreio/${pedidoId}`;
+      if (fallbackIP) {
+        const port = process.env.PORT || "3000";
+        return `http://${fallbackIP}:${port}/rastreio/${pedidoId}`;
+      }
+    } catch {
+      // Fallback se não conseguir detectar
     }
-  } catch {
-    // Fallback se não conseguir detectar
   }
 
-  // Fallback para localhost
-  const port = process.env.PORT || "3000";
-  return `http://localhost:${port}/rastreio/${pedidoId}`;
+  // Fallback
+  const baseUrl = envUrl || `http://localhost:${process.env.PORT || "3000"}`;
+  return `${baseUrl}/rastreio/${pedidoId}`;
 }
 
 /**
