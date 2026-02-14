@@ -14,10 +14,12 @@ export function TrilhaProduto({ produtoNome }: TrilhaProdutoProps) {
   const [loading, setLoading] = useState(false);
 
   async function consultarIA() {
+    if (loading) return; // Evita cliques duplicados
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/trilha/${encodeURIComponent(produtoNome)}`
+        `/api/trilha/${encodeURIComponent(produtoNome)}`,
+        { cache: "force-cache" }
       );
       const data = await res.json();
       setInfo(data.info);
