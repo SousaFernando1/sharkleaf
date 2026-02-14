@@ -30,10 +30,16 @@ export function gerarCodigoBrinde(): string {
  * Em desenvolvimento: detecta o IP da rede local para celulares na mesma Wi-Fi.
  */
 export function gerarQRCodeUrl(pedidoId: string): string {
-  // Em produção, sempre usar NEXTAUTH_URL (domínio Vercel)
-  const envUrl = process.env.NEXTAUTH_URL || "";
-  if (envUrl && !envUrl.includes("localhost")) {
-    return `${envUrl}/rastreio/${pedidoId}`;
+  // Em produção, usar NEXTAUTH_URL ou VERCEL_URL (auto-definida pela Vercel)
+  const nextAuthUrl = process.env.NEXTAUTH_URL || "";
+  if (nextAuthUrl && !nextAuthUrl.includes("localhost")) {
+    return `${nextAuthUrl}/rastreio/${pedidoId}`;
+  }
+
+  // Fallback para VERCEL_URL (definida automaticamente pela Vercel)
+  const vercelUrl = process.env.VERCEL_URL;
+  if (vercelUrl) {
+    return `https://${vercelUrl}/rastreio/${pedidoId}`;
   }
 
   // Em desenvolvimento, detecta o IP da rede automaticamente (server-side only)
