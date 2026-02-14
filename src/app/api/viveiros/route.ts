@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const canteiros = await prisma.canteiro.findMany({
+    const viveiros = await prisma.canteiro.findMany({
       include: {
         estoques: {
           include: { produto: true },
@@ -11,10 +11,10 @@ export async function GET() {
       },
       orderBy: { nome: "asc" },
     });
-    return NextResponse.json(canteiros);
+    return NextResponse.json(viveiros);
   } catch (error) {
     return NextResponse.json(
-      { error: "Erro ao buscar canteiros" },
+      { error: "Erro ao buscar viveiros" },
       { status: 500 }
     );
   }
@@ -32,17 +32,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const canteiro = await prisma.canteiro.create({
+    const viveiro = await prisma.canteiro.create({
       data: {
         nome,
         capacidade: parseInt(capacidade),
       },
     });
 
-    return NextResponse.json(canteiro, { status: 201 });
+    return NextResponse.json(viveiro, { status: 201 });
   } catch (error) {
     return NextResponse.json(
-      { error: "Erro ao criar canteiro" },
+      { error: "Erro ao criar viveiro" },
       { status: 500 }
     );
   }

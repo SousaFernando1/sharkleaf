@@ -124,7 +124,7 @@ export default async function PedidoDetalhePage({
                 <TableHead>Quantidade</TableHead>
                 <TableHead>Preço Unit.</TableHead>
                 <TableHead>Subtotal</TableHead>
-                <TableHead>Canteiros</TableHead>
+                <TableHead>Viveiros</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

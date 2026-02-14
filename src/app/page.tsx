@@ -31,7 +31,7 @@ export default function HomePage() {
           <span className="text-green-600">para o seu viveiro</span>
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
-          Controle pedidos, estoque e canteiros com facilidade. Fidelize seus
+          Controle pedidos, estoque e viveiros com facilidade. Fidelize seus
           clientes com um sistema de gamificação único via QR Code.
         </p>
         <div className="mt-8 flex justify-center gap-4">
@@ -53,7 +53,7 @@ export default function HomePage() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
               <TreePine className="h-6 w-6 text-green-600" />
             </div>
-            <h3 className="font-semibold">Gestão de Canteiros</h3>
+            <h3 className="font-semibold">Gestão de Viveiros</h3>
             <p className="mt-2 text-sm text-muted-foreground">
               Controle de áreas de cultivo e estoque setorial
             </p>

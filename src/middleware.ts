@@ -7,7 +7,7 @@ export default withAuth(
     const pathname = req.nextUrl.pathname;
 
     // Rotas admin: apenas usuários com tipo ADMIN
-    if (pathname.startsWith("/dashboard") || pathname.startsWith("/pedidos") || pathname.startsWith("/produtos") || pathname.startsWith("/clientes") || pathname.startsWith("/canteiros") || pathname.startsWith("/estoque") || pathname.startsWith("/config")) {
+    if (pathname.startsWith("/dashboard") || pathname.startsWith("/pedidos") || pathname.startsWith("/produtos") || pathname.startsWith("/clientes") || pathname.startsWith("/viveiros") || pathname.startsWith("/estoque") || pathname.startsWith("/config")) {
       if (token?.tipo !== "ADMIN") {
         return NextResponse.redirect(new URL("/login", req.url));
       }

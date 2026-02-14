@@ -27,7 +27,7 @@ interface Produto {
   nome: string;
 }
 
-interface Canteiro {
+interface Viveiro {
   id: string;
   nome: string;
 }
@@ -37,19 +37,19 @@ export function EstoqueFormDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [produtos, setProdutos] = useState<Produto[]>([]);
-  const [canteiros, setCanteiros] = useState<Canteiro[]>([]);
+  const [viveiros, setViveiros] = useState<Viveiro[]>([]);
   const [tipo, setTipo] = useState<string>("ENTRADA");
   const [produtoId, setProdutoId] = useState<string>("");
-  const [canteiroId, setCanteiroId] = useState<string>("");
+  const [viveiroId, setViveiroId] = useState<string>("");
 
   useEffect(() => {
     if (open) {
       fetch("/api/produtos")
         .then((r) => r.json())
         .then(setProdutos);
-      fetch("/api/canteiros")
+      fetch("/api/viveiros")
         .then((r) => r.json())
-        .then(setCanteiros);
+        .then(setViveiros);
     }
   }, [open]);
 
@@ -60,7 +60,7 @@ export function EstoqueFormDialog() {
     const formData = new FormData(e.currentTarget);
     const data = {
       produtoId,
-      canteiroId,
+      canteiroId: viveiroId,
       quantidade: formData.get("quantidade") as string,
       tipo,
     };
@@ -131,13 +131,13 @@ export function EstoqueFormDialog() {
           </div>
 
           <div className="space-y-2">
-            <Label>Canteiro *</Label>
-            <Select value={canteiroId} onValueChange={setCanteiroId}>
+            <Label>Viveiro *</Label>
+            <Select value={viveiroId} onValueChange={setViveiroId}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o canteiro" />
+                <SelectValue placeholder="Selecione o viveiro" />
               </SelectTrigger>
               <SelectContent>
-                {canteiros.map((c) => (
+                {viveiros.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.nome}
                   </SelectItem>

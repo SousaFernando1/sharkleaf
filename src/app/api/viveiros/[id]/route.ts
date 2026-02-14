@@ -10,7 +10,7 @@ export async function PUT(
     const body = await request.json();
     const { nome, capacidade } = body;
 
-    const canteiro = await prisma.canteiro.update({
+    const viveiro = await prisma.canteiro.update({
       where: { id },
       data: {
         nome,
@@ -18,10 +18,10 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json(canteiro);
+    return NextResponse.json(viveiro);
   } catch (error) {
     return NextResponse.json(
-      { error: "Erro ao atualizar canteiro" },
+      { error: "Erro ao atualizar viveiro" },
       { status: 500 }
     );
   }
@@ -42,7 +42,7 @@ export async function DELETE(
 
     if (estoqueTotal._sum.quantidade && estoqueTotal._sum.quantidade > 0) {
       return NextResponse.json(
-        { error: "Não é possível excluir canteiro com estoque" },
+        { error: "Não é possível excluir viveiro com estoque" },
         { status: 400 }
       );
     }
@@ -52,7 +52,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(
-      { error: "Erro ao excluir canteiro" },
+      { error: "Erro ao excluir viveiro" },
       { status: 500 }
     );
   }

@@ -21,11 +21,11 @@ interface Produto {
   id: string;
   nome: string;
   precoUnitario: number;
-  estoques: { canteiroId: string; quantidade: number; canteiro: { id: string; nome: string } }[];
+  estoques: { canteiroId: string; quantidade: number; canteiro: { id: string; nome: string } }[]; // canteiro = viveiro no Prisma
 }
 
-interface CanteiroSelecionado {
-  canteiroId: string;
+interface ViveiroSelecionado {
+  canteiroId: string; // ID do viveiro (modelo Prisma = canteiro)
   nome: string;
   quantidade: number;
   estoqueDisponivel: number;
@@ -36,7 +36,7 @@ interface ItemPedido {
   produtoNome: string;
   precoUnitario: number;
   quantidade: number;
-  canteiros: CanteiroSelecionado[];
+  canteiros: ViveiroSelecionado[];
 }
 
 export default function NovoPedidoPage() {
@@ -68,8 +68,8 @@ export default function NovoPedidoPage() {
       return;
     }
 
-    // Preparar canteiros disponíveis
-    const canteirosDisponiveis = produto.estoques
+    // Preparar viveiros disponíveis
+    const viveirosDisponiveis = produto.estoques
       .filter((e) => e.quantidade > 0)
       .map((e) => ({
         canteiroId: e.canteiroId,
@@ -78,8 +78,8 @@ export default function NovoPedidoPage() {
         estoqueDisponivel: e.quantidade,
       }));
 
-    if (canteirosDisponiveis.length === 0) {
-      toast.error("Este produto não tem estoque em nenhum canteiro");
+    if (viveirosDisponiveis.length === 0) {
+      toast.error("Este produto não tem estoque em nenhum viveiro");
       return;
     }
 
@@ -90,7 +90,7 @@ export default function NovoPedidoPage() {
         produtoNome: produto.nome,
         precoUnitario: produto.precoUnitario,
         quantidade: 0,
-        canteiros: canteirosDisponiveis,
+        canteiros: viveirosDisponiveis,
       },
     ]);
     setProdutoSelecionado("");
@@ -188,7 +188,7 @@ export default function NovoPedidoPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Novo Pedido</h1>
           <p className="text-muted-foreground">
-            Monte o pedido adicionando produtos e definindo canteiros
+            Monte o pedido adicionando produtos e definindo viveiros
           </p>
         </div>
       </div>
@@ -246,7 +246,7 @@ export default function NovoPedidoPage() {
           </CardHeader>
           <CardContent>
             <p className="mb-3 text-sm font-medium">
-              Definir quantidade por canteiro:
+              Definir quantidade por viveiro:
             </p>
             <div className="space-y-2">
               {item.canteiros.map((canteiro, canteiroIndex) => (

@@ -129,20 +129,20 @@ async function main() {
   console.log("✅ Produtos criados: Eucalipto, Pinus, Acácia");
 
   // ==========================================
-  // 5. Criar canteiros de exemplo
+  // 5. Criar viveiros de exemplo
   // ==========================================
-  const canteiroNorte = await prisma.canteiro.create({
-    data: { nome: "Canteiro Norte", capacidade: 5000 },
+  const viveiroNorte = await prisma.canteiro.create({
+    data: { nome: "Viveiro Norte", capacidade: 5000 },
   });
 
-  const canteiroSul = await prisma.canteiro.create({
-    data: { nome: "Canteiro Sul", capacidade: 3000 },
+  const viveiroSul = await prisma.canteiro.create({
+    data: { nome: "Viveiro Sul", capacidade: 3000 },
   });
 
   const estufa = await prisma.canteiro.create({
     data: { nome: "Estufa A", capacidade: 2000 },
   });
-  console.log("✅ Canteiros criados: Norte, Sul, Estufa A");
+  console.log("✅ Viveiros criados: Norte, Sul, Estufa A");
 
   // ==========================================
   // 6. Criar estoque inicial
@@ -151,17 +151,17 @@ async function main() {
     data: [
       {
         produtoId: eucalipto.id,
-        canteiroId: canteiroNorte.id,
+        canteiroId: viveiroNorte.id,
         quantidade: 2000,
       },
       {
         produtoId: eucalipto.id,
-        canteiroId: canteiroSul.id,
+        canteiroId: viveiroSul.id,
         quantidade: 1500,
       },
       {
         produtoId: pinus.id,
-        canteiroId: canteiroNorte.id,
+        canteiroId: viveiroNorte.id,
         quantidade: 1000,
       },
       {
@@ -171,7 +171,7 @@ async function main() {
       },
       {
         produtoId: acacia.id,
-        canteiroId: canteiroSul.id,
+        canteiroId: viveiroSul.id,
         quantidade: 500,
       },
       {

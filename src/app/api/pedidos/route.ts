@@ -58,18 +58,18 @@ export async function POST(request: NextRequest) {
           throw new Error(`Produto ${item.produtoId} não encontrado`);
         }
 
-        // Validar que as quantidades dos canteiros somam o total
-        const totalCanteiros = item.canteiros.reduce(
+        // Validar que as quantidades dos viveiros somam o total
+        const totalViveiros = item.canteiros.reduce(
           (sum, c) => sum + c.quantidade,
           0
         );
-        if (totalCanteiros !== item.quantidade) {
+        if (totalViveiros !== item.quantidade) {
           throw new Error(
-            `A soma das quantidades dos canteiros (${totalCanteiros}) não corresponde à quantidade do item (${item.quantidade}) para ${produto.nome}`
+            `A soma das quantidades dos viveiros (${totalViveiros}) não corresponde à quantidade do item (${item.quantidade}) para ${produto.nome}`
           );
         }
 
-        // Validar estoque de cada canteiro
+        // Validar estoque de cada viveiro
         for (const canteiro of item.canteiros) {
           const estoque = await tx.estoqueCanteiro.findUnique({
             where: {
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
           if (!estoque || estoque.quantidade < canteiro.quantidade) {
             throw new Error(
-              `Estoque insuficiente no canteiro para ${produto.nome}`
+              `Estoque insuficiente no viveiro para ${produto.nome}`
             );
           }
         }

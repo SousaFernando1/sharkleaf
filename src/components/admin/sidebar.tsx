@@ -37,8 +37,8 @@ const menuItems = [
     icon: Package,
   },
   {
-    label: "Canteiros",
-    href: "/canteiros",
+    label: "Viveiros",
+    href: "/viveiros",
     icon: TreePine,
   },
   {

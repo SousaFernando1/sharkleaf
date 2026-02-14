@@ -48,7 +48,7 @@ export default async function EstoquePage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Estoque</h1>
           <p className="text-muted-foreground">
-            Gestão de estoque por produto e canteiro
+            Gestão de estoque por produto e viveiro
           </p>
         </div>
         <EstoqueFormDialog />
@@ -57,19 +57,19 @@ export default async function EstoquePage() {
       {/* Estoque por Produto/Canteiro */}
       <Card>
         <CardHeader>
-          <CardTitle>Estoque por Produto e Canteiro</CardTitle>
+          <CardTitle>Estoque por Produto e Viveiro</CardTitle>
         </CardHeader>
         <CardContent>
           {estoques.length === 0 ? (
             <p className="py-8 text-center text-muted-foreground">
-              Nenhum estoque cadastrado. Adicione produtos aos canteiros!
+              Nenhum estoque cadastrado. Adicione produtos aos viveiros!
             </p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Produto</TableHead>
-                  <TableHead>Canteiro</TableHead>
+                  <TableHead>Viveiro</TableHead>
                   <TableHead>Quantidade</TableHead>
                   <TableHead>Atualizado em</TableHead>
                 </TableRow>
@@ -107,7 +107,7 @@ export default async function EstoquePage() {
                 <TableRow>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Produto</TableHead>
-                  <TableHead>Canteiro</TableHead>
+                  <TableHead>Viveiro</TableHead>
                   <TableHead>Quantidade</TableHead>
                   <TableHead>Motivo</TableHead>
                   <TableHead>Data</TableHead>
