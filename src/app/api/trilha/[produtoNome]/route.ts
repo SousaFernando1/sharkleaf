@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const PROMPT_PADRAO = `Você é um assistente especialista em botânica e silvicultura. 
 Forneça informações breves e educativas sobre a seguinte espécie de planta/muda: "{NOME_PRODUTO}".
@@ -22,27 +22,23 @@ export async function GET(
     const { produtoNome } = await params;
     const nomeProduto = decodeURIComponent(produtoNome);
 
-    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === "sua-chave-openai-aqui") {
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
       return NextResponse.json({
-        info: `Informações da IA não disponíveis no momento para "${nomeProduto}". Configure a chave da API OpenAI para habilitar este recurso.`,
+        info: `Informações da IA não disponíveis no momento para "${nomeProduto}". Configure a chave da API Gemini (GEMINI_API_KEY) para habilitar este recurso.`,
         disponivel: false,
       });
     }
 
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const prompt = PROMPT_PADRAO.replace("{NOME_PRODUTO}", nomeProduto);
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 500,
-      temperature: 0.7,
-    });
-
-    const resposta = completion.choices[0]?.message?.content || "Não foi possível obter informações.";
+    const result = await model.generateContent(prompt);
+    const resposta =
+      result.response.text() || "Não foi possível obter informações.";
 
     return NextResponse.json({
       info: resposta,
@@ -56,4 +52,3 @@ export async function GET(
     });
   }
 }
-
