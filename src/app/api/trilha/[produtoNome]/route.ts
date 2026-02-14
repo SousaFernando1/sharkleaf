@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 const PROMPT_PADRAO = `Você é um assistente especialista em botânica e silvicultura. 
 Forneça informações breves e educativas sobre a seguinte espécie de planta/muda: "{NOME_PRODUTO}".
 
@@ -33,10 +29,14 @@ export async function GET(
       });
     }
 
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
     const prompt = PROMPT_PADRAO.replace("{NOME_PRODUTO}", nomeProduto);
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
       max_tokens: 500,
       temperature: 0.7,
@@ -48,10 +48,10 @@ export async function GET(
       info: resposta,
       disponivel: true,
     });
-  } catch (error) {
-    console.error("Erro na consulta à IA:", error);
+  } catch (error: any) {
+    console.error("Erro na consulta à IA:", error?.message || error);
     return NextResponse.json({
-      info: "Não foi possível obter as informações neste momento. Tente novamente mais tarde.",
+      info: `Não foi possível obter as informações neste momento. Erro: ${error?.message || "Desconhecido"}`,
       disponivel: false,
     });
   }
