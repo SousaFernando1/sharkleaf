@@ -36,10 +36,10 @@ export function gerarQRCodeUrl(pedidoId: string): string {
     return `${nextAuthUrl}/rastreio/${pedidoId}`;
   }
 
-  // Fallback para VERCEL_URL (definida automaticamente pela Vercel)
-  const vercelUrl = process.env.VERCEL_URL;
-  if (vercelUrl) {
-    return `https://${vercelUrl}/rastreio/${pedidoId}`;
+  // Fallback para VERCEL_PROJECT_PRODUCTION_URL (URL pública de produção da Vercel)
+  const vercelProdUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (vercelProdUrl) {
+    return `https://${vercelProdUrl}/rastreio/${pedidoId}`;
   }
 
   // Em desenvolvimento, detecta o IP da rede automaticamente (server-side only)
