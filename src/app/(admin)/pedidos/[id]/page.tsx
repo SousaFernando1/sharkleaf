@@ -146,7 +146,7 @@ export default async function PedidoDetalhePage({
             </TableBody>
           </Table>
           <div className="mt-4 flex justify-end gap-4 border-t pt-4">
-            {pedido.desconto && pedido.desconto > 0 && (
+            {pedido.desconto != null && pedido.desconto > 0 && (
               <p className="text-sm text-muted-foreground">
                 Desconto: {pedido.desconto}%
               </p>

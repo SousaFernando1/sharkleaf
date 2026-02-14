@@ -140,7 +140,7 @@ export default async function RastreioPage({
               ))}
             </div>
             <div className="mt-4 flex justify-end border-t pt-3">
-              {pedido.desconto && pedido.desconto > 0 && (
+              {pedido.desconto != null && pedido.desconto > 0 && (
                 <p className="mr-4 text-sm text-muted-foreground">
                   Desconto: {pedido.desconto}%
                 </p>
