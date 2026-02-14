@@ -13,7 +13,7 @@ import { toast } from "sonner";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const callbackUrl = searchParams.get("callbackUrl");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -52,7 +52,15 @@ function LoginForm() {
       // NextAuth returns 200 on success, 401 on failure
       // With redirect: "manual", successful auth returns 200 or 302
       if (res.status === 200 || res.type === "opaqueredirect") {
-        router.push(callbackUrl);
+        if (callbackUrl) {
+          router.push(callbackUrl);
+        } else {
+          // Buscar a sessão para determinar o tipo de usuário
+          const sessionRes = await fetch("/api/auth/session");
+          const session = await sessionRes.json();
+          const destino = session?.user?.tipo === "ADMIN" ? "/dashboard" : "/portal";
+          router.push(destino);
+        }
         router.refresh();
       } else {
         toast.error("Email ou senha inválidos");
