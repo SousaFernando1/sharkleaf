@@ -5,7 +5,7 @@ import { gerarTicket } from "@/lib/helpers";
 interface ItemInput {
   produtoId: string;
   quantidade: number;
-  canteiros: { canteiroId: string; quantidade: number }[];
+  viveiros: { viveiroId: string; quantidade: number }[];
 }
 
 export async function GET() {
@@ -59,8 +59,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Validar que as quantidades dos viveiros somam o total
-        const totalViveiros = item.canteiros.reduce(
-          (sum, c) => sum + c.quantidade,
+        const totalViveiros = item.viveiros.reduce(
+          (sum, v) => sum + v.quantidade,
           0
         );
         if (totalViveiros !== item.quantidade) {
@@ -70,17 +70,17 @@ export async function POST(request: NextRequest) {
         }
 
         // Validar estoque de cada viveiro
-        for (const canteiro of item.canteiros) {
-          const estoque = await tx.estoqueCanteiro.findUnique({
+        for (const viveiro of item.viveiros) {
+          const estoque = await tx.estoqueViveiro.findUnique({
             where: {
-              produtoId_canteiroId: {
+              produtoId_viveiroId: {
                 produtoId: item.produtoId,
-                canteiroId: canteiro.canteiroId,
+                viveiroId: viveiro.viveiroId,
               },
             },
           });
 
-          if (!estoque || estoque.quantidade < canteiro.quantidade) {
+          if (!estoque || estoque.quantidade < viveiro.quantidade) {
             throw new Error(
               `Estoque insuficiente no viveiro para ${produto.nome}`
             );
@@ -151,36 +151,36 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        for (const canteiro of item.canteiros) {
-          // Criar vínculo item-canteiro
-          await tx.itemPedidoCanteiro.create({
+        for (const viveiro of item.viveiros) {
+          // Criar vínculo item-viveiro
+          await tx.itemPedidoViveiro.create({
             data: {
               itemPedidoId: itemPedido.id,
-              canteiroId: canteiro.canteiroId,
-              quantidade: canteiro.quantidade,
+              viveiroId: viveiro.viveiroId,
+              quantidade: viveiro.quantidade,
             },
           });
 
           // Baixar estoque
-          const estoque = await tx.estoqueCanteiro.findUnique({
+          const estoque = await tx.estoqueViveiro.findUnique({
             where: {
-              produtoId_canteiroId: {
+              produtoId_viveiroId: {
                 produtoId: item.produtoId,
-                canteiroId: canteiro.canteiroId,
+                viveiroId: viveiro.viveiroId,
               },
             },
           });
 
-          await tx.estoqueCanteiro.update({
+          await tx.estoqueViveiro.update({
             where: { id: estoque!.id },
-            data: { quantidade: estoque!.quantidade - canteiro.quantidade },
+            data: { quantidade: estoque!.quantidade - viveiro.quantidade },
           });
 
           // Registrar movimentação
           await tx.movimentacaoEstoque.create({
             data: {
               tipo: "SAIDA",
-              quantidade: canteiro.quantidade,
+              quantidade: viveiro.quantidade,
               motivo: "PEDIDO",
               estoqueId: estoque!.id,
               pedidoId: novoPedido.id,
@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
           itens: {
             include: {
               produto: true,
-              canteiros: { include: { canteiro: true } },
+              viveiros: { include: { viveiro: true } },
             },
           },
         },
@@ -223,4 +223,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

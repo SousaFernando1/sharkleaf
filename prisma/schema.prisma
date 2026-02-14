@@ -43,15 +43,15 @@ model Produtor {
 }
 
 // ==========================================
-// CANTEIROS E ESTOQUE
+// VIVEIROS E ESTOQUE
 // ==========================================
 
-model Canteiro {
+model Viveiro {
   id              String              @id @default(cuid())
   nome            String
   capacidade      Int
-  estoques        EstoqueCanteiro[]
-  itensPedido     ItemPedidoCanteiro[]
+  estoques        EstoqueViveiro[]
+  itensPedido     ItemPedidoViveiro[]
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
 }
@@ -62,24 +62,24 @@ model Produto {
   categoria     String?
   descricao     String?
   precoUnitario Float             @default(0)
-  estoques      EstoqueCanteiro[]
+  estoques      EstoqueViveiro[]
   itensPedido   ItemPedido[]
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 }
 
-model EstoqueCanteiro {
+model EstoqueViveiro {
   id            String                @id @default(cuid())
   quantidade    Int                   @default(0)
   produtoId     String
-  canteiroId    String
+  viveiroId     String
   produto       Produto               @relation(fields: [produtoId], references: [id])
-  canteiro      Canteiro              @relation(fields: [canteiroId], references: [id])
+  viveiro       Viveiro               @relation(fields: [viveiroId], references: [id])
   movimentacoes MovimentacaoEstoque[]
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
 
-  @@unique([produtoId, canteiroId])
+  @@unique([produtoId, viveiroId])
 }
 
 model MovimentacaoEstoque {
@@ -88,7 +88,7 @@ model MovimentacaoEstoque {
   quantidade Int
   motivo    String? // AJUSTE_MANUAL, PEDIDO, CANCELAMENTO
   estoqueId String
-  estoque   EstoqueCanteiro  @relation(fields: [estoqueId], references: [id])
+  estoque   EstoqueViveiro   @relation(fields: [estoqueId], references: [id])
   pedidoId  String?
   pedido    Pedido?          @relation(fields: [pedidoId], references: [id])
   createdAt DateTime         @default(now())
@@ -126,18 +126,18 @@ model ItemPedido {
   pedido        Pedido               @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
   produtoId     String
   produto       Produto              @relation(fields: [produtoId], references: [id])
-  canteiros     ItemPedidoCanteiro[]
+  viveiros      ItemPedidoViveiro[]
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
 }
 
-model ItemPedidoCanteiro {
+model ItemPedidoViveiro {
   id           String     @id @default(cuid())
-  quantidade   Int // Quantidade deste produto que vem deste canteiro
+  quantidade   Int // Quantidade deste produto que vem deste viveiro
   itemPedidoId String
   itemPedido   ItemPedido @relation(fields: [itemPedidoId], references: [id], onDelete: Cascade)
-  canteiroId   String
-  canteiro     Canteiro   @relation(fields: [canteiroId], references: [id])
+  viveiroId    String
+  viveiro      Viveiro    @relation(fields: [viveiroId], references: [id])
   createdAt    DateTime   @default(now())
 }
 

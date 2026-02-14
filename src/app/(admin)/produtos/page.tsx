@@ -18,7 +18,7 @@ async function getProdutos() {
   return prisma.produto.findMany({
     include: {
       estoques: {
-        include: { canteiro: true },
+        include: { viveiro: true },
       },
       _count: {
         select: { itensPedido: true },

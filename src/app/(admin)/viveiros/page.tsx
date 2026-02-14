@@ -14,7 +14,7 @@ import {
 import { ViveiroFormDialog } from "@/components/admin/viveiro-form-dialog";
 
 async function getViveiros() {
-  return prisma.canteiro.findMany({
+  return prisma.viveiro.findMany({
     include: {
       estoques: {
         include: { produto: true },

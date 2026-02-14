@@ -60,7 +60,7 @@ export function EstoqueFormDialog() {
     const formData = new FormData(e.currentTarget);
     const data = {
       produtoId,
-      canteiroId: viveiroId,
+      canteiroId: viveiroId, // API aceita canteiroId por compatibilidade
       quantidade: formData.get("quantidade") as string,
       tipo,
     };

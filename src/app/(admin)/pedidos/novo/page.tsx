@@ -21,11 +21,11 @@ interface Produto {
   id: string;
   nome: string;
   precoUnitario: number;
-  estoques: { canteiroId: string; quantidade: number; canteiro: { id: string; nome: string } }[]; // canteiro = viveiro no Prisma
+  estoques: { viveiroId: string; quantidade: number; viveiro: { id: string; nome: string } }[];
 }
 
 interface ViveiroSelecionado {
-  canteiroId: string; // ID do viveiro (modelo Prisma = canteiro)
+  viveiroId: string;
   nome: string;
   quantidade: number;
   estoqueDisponivel: number;
@@ -36,7 +36,7 @@ interface ItemPedido {
   produtoNome: string;
   precoUnitario: number;
   quantidade: number;
-  canteiros: ViveiroSelecionado[];
+  viveiros: ViveiroSelecionado[];
 }
 
 export default function NovoPedidoPage() {
@@ -72,8 +72,8 @@ export default function NovoPedidoPage() {
     const viveirosDisponiveis = produto.estoques
       .filter((e) => e.quantidade > 0)
       .map((e) => ({
-        canteiroId: e.canteiroId,
-        nome: e.canteiro.nome,
+        viveiroId: e.viveiroId,
+        nome: e.viveiro.nome,
         quantidade: 0,
         estoqueDisponivel: e.quantidade,
       }));
@@ -90,7 +90,7 @@ export default function NovoPedidoPage() {
         produtoNome: produto.nome,
         precoUnitario: produto.precoUnitario,
         quantidade: 0,
-        canteiros: viveirosDisponiveis,
+        viveiros: viveirosDisponiveis,
       },
     ]);
     setProdutoSelecionado("");
@@ -100,18 +100,18 @@ export default function NovoPedidoPage() {
     setItens(itens.filter((_, i) => i !== index));
   }
 
-  function atualizarQuantidadeCanteiro(
+  function atualizarQuantidadeViveiro(
     itemIndex: number,
-    canteiroIndex: number,
+    viveiroIndex: number,
     quantidade: number
   ) {
     const novosItens = [...itens];
     const item = novosItens[itemIndex];
-    item.canteiros[canteiroIndex].quantidade = Math.min(
+    item.viveiros[viveiroIndex].quantidade = Math.min(
       quantidade,
-      item.canteiros[canteiroIndex].estoqueDisponivel
+      item.viveiros[viveiroIndex].estoqueDisponivel
     );
-    item.quantidade = item.canteiros.reduce((sum, c) => sum + c.quantidade, 0);
+    item.quantidade = item.viveiros.reduce((sum, c) => sum + c.quantidade, 0);
     setItens(novosItens);
   }
 
@@ -144,11 +144,11 @@ export default function NovoPedidoPage() {
         itens: itens.map((item) => ({
           produtoId: item.produtoId,
           quantidade: item.quantidade,
-          canteiros: item.canteiros
-            .filter((c) => c.quantidade > 0)
-            .map((c) => ({
-              canteiroId: c.canteiroId,
-              quantidade: c.quantidade,
+          viveiros: item.viveiros
+            .filter((v) => v.quantidade > 0)
+            .map((v) => ({
+              viveiroId: v.viveiroId,
+              quantidade: v.quantidade,
             })),
         })),
         desconto: descontoPercent || undefined,
@@ -249,26 +249,26 @@ export default function NovoPedidoPage() {
               Definir quantidade por viveiro:
             </p>
             <div className="space-y-2">
-              {item.canteiros.map((canteiro, canteiroIndex) => (
+              {item.viveiros.map((viveiro, viveiroIndex) => (
                 <div
-                  key={canteiro.canteiroId}
+                  key={viveiro.viveiroId}
                   className="flex items-center gap-4 rounded-lg bg-muted/50 p-3"
                 >
                   <div className="flex-1">
-                    <p className="font-medium">{canteiro.nome}</p>
+                    <p className="font-medium">{viveiro.nome}</p>
                     <p className="text-xs text-muted-foreground">
-                      Disponível: {canteiro.estoqueDisponivel}
+                      Disponível: {viveiro.estoqueDisponivel}
                     </p>
                   </div>
                   <Input
                     type="number"
                     min="0"
-                    max={canteiro.estoqueDisponivel}
-                    value={canteiro.quantidade}
+                    max={viveiro.estoqueDisponivel}
+                    value={viveiro.quantidade}
                     onChange={(e) =>
-                      atualizarQuantidadeCanteiro(
+                      atualizarQuantidadeViveiro(
                         itemIndex,
-                        canteiroIndex,
+                        viveiroIndex,
                         parseInt(e.target.value) || 0
                       )
                     }

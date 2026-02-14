@@ -1,35 +1,33 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaLibSQL } from "@prisma/adapter-libsql";
-import { createClient } from "@libsql/client";
 import bcrypt from "bcryptjs";
 
-function createPrismaClient(): PrismaClient {
+async function main() {
+  let prisma: PrismaClient;
+
   // Se TURSO_DATABASE_URL estiver configurada, usa Turso
   if (process.env.TURSO_DATABASE_URL) {
-    const libsql = createClient({
+    const libsqlModule = await import("@libsql/client");
+    const adapterModule = await import("@prisma/adapter-libsql");
+    const libsql = libsqlModule.createClient({
       url: process.env.TURSO_DATABASE_URL,
       authToken: process.env.TURSO_AUTH_TOKEN,
     });
-    const adapter = new PrismaLibSQL(libsql);
-    return new PrismaClient({ adapter } as any);
+    const adapter = new adapterModule.PrismaLibSQL(libsql);
+    prisma = new PrismaClient({ adapter } as any);
+    console.log("📡 Conectado ao Turso");
+  } else {
+    prisma = new PrismaClient();
+    console.log("💾 Conectado ao SQLite local");
   }
-  // Caso contrário, usa SQLite local
-  return new PrismaClient();
-}
 
-const prisma = createPrismaClient();
-
-async function main() {
   console.log("🌱 Iniciando seed...");
 
   // ==========================================
   // 1. Criar usuário admin
   // ==========================================
   const senhaAdmin = await bcrypt.hash("admin123", 10);
-  const admin = await prisma.usuario.upsert({
-    where: { email: "admin@sharkleaf.com" },
-    update: {},
-    create: {
+  const admin = await prisma.usuario.create({
+    data: {
       email: "admin@sharkleaf.com",
       senha: senhaAdmin,
       tipo: "ADMIN",
@@ -40,10 +38,8 @@ async function main() {
   // ==========================================
   // 2. Criar produtor
   // ==========================================
-  const produtor = await prisma.produtor.upsert({
-    where: { email: "produtor@sharkleaf.com" },
-    update: {},
-    create: {
+  const produtor = await prisma.produtor.create({
+    data: {
       nome: "Viveiro SharkLeaf",
       email: "produtor@sharkleaf.com",
       telefone: "(48) 99999-0000",
@@ -90,8 +86,6 @@ async function main() {
     },
   ];
 
-  // Limpar medalhas existentes para evitar duplicatas
-  await prisma.medalha.deleteMany();
   for (const medalha of medalhas) {
     await prisma.medalha.create({ data: medalha });
   }
@@ -131,15 +125,15 @@ async function main() {
   // ==========================================
   // 5. Criar viveiros de exemplo
   // ==========================================
-  const viveiroNorte = await prisma.canteiro.create({
+  const viveiroNorte = await prisma.viveiro.create({
     data: { nome: "Viveiro Norte", capacidade: 5000 },
   });
 
-  const viveiroSul = await prisma.canteiro.create({
+  const viveiroSul = await prisma.viveiro.create({
     data: { nome: "Viveiro Sul", capacidade: 3000 },
   });
 
-  const estufa = await prisma.canteiro.create({
+  const estufa = await prisma.viveiro.create({
     data: { nome: "Estufa A", capacidade: 2000 },
   });
   console.log("✅ Viveiros criados: Norte, Sul, Estufa A");
@@ -147,52 +141,27 @@ async function main() {
   // ==========================================
   // 6. Criar estoque inicial
   // ==========================================
-  await prisma.estoqueCanteiro.createMany({
-    data: [
-      {
-        produtoId: eucalipto.id,
-        canteiroId: viveiroNorte.id,
-        quantidade: 2000,
-      },
-      {
-        produtoId: eucalipto.id,
-        canteiroId: viveiroSul.id,
-        quantidade: 1500,
-      },
-      {
-        produtoId: pinus.id,
-        canteiroId: viveiroNorte.id,
-        quantidade: 1000,
-      },
-      {
-        produtoId: pinus.id,
-        canteiroId: estufa.id,
-        quantidade: 800,
-      },
-      {
-        produtoId: acacia.id,
-        canteiroId: viveiroSul.id,
-        quantidade: 500,
-      },
-      {
-        produtoId: acacia.id,
-        canteiroId: estufa.id,
-        quantidade: 300,
-      },
-    ],
-  });
+  const estoquesIniciais = [
+    { produtoId: eucalipto.id, viveiroId: viveiroNorte.id, quantidade: 2000 },
+    { produtoId: eucalipto.id, viveiroId: viveiroSul.id, quantidade: 1500 },
+    { produtoId: pinus.id, viveiroId: viveiroNorte.id, quantidade: 1000 },
+    { produtoId: pinus.id, viveiroId: estufa.id, quantidade: 800 },
+    { produtoId: acacia.id, viveiroId: viveiroSul.id, quantidade: 500 },
+    { produtoId: acacia.id, viveiroId: estufa.id, quantidade: 300 },
+  ];
+
+  for (const estoque of estoquesIniciais) {
+    await prisma.estoqueViveiro.create({ data: estoque });
+  }
   console.log("✅ Estoque inicial criado");
 
   console.log("\n🎉 Seed finalizado com sucesso!");
   console.log("📧 Login admin: admin@sharkleaf.com / admin123");
+
+  await prisma.$disconnect();
 }
 
-main()
-  .catch((e) => {
-    console.error("❌ Erro no seed:", e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
-
+main().catch((e) => {
+  console.error("❌ Erro no seed:", e);
+  process.exit(1);
+});

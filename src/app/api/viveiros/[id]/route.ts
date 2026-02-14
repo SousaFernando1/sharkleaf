@@ -10,7 +10,7 @@ export async function PUT(
     const body = await request.json();
     const { nome, capacidade } = body;
 
-    const viveiro = await prisma.canteiro.update({
+    const viveiro = await prisma.viveiro.update({
       where: { id },
       data: {
         nome,
@@ -35,8 +35,8 @@ export async function DELETE(
     const { id } = await params;
 
     // Verificar se tem estoque
-    const estoqueTotal = await prisma.estoqueCanteiro.aggregate({
-      where: { canteiroId: id },
+    const estoqueTotal = await prisma.estoqueViveiro.aggregate({
+      where: { viveiroId: id },
       _sum: { quantidade: true },
     });
 
@@ -47,7 +47,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.canteiro.delete({ where: { id } });
+    await prisma.viveiro.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

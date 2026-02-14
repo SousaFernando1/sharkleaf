@@ -5,13 +5,13 @@ import { prisma } from "@/lib/prisma";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { produtoId, canteiroId, quantidade, tipo } = body;
+    const { produtoId, canteiroId: viveiroId, quantidade, tipo } = body;
 
-    if (!produtoId || !canteiroId || quantidade === undefined || !tipo) {
+    if (!produtoId || !viveiroId || quantidade === undefined || !tipo) {
       return NextResponse.json(
         {
           error:
-            "produtoId, canteiroId, quantidade e tipo (ENTRADA/SAIDA) são obrigatórios",
+            "produtoId, viveiroId, quantidade e tipo (ENTRADA/SAIDA) são obrigatórios",
         },
         { status: 400 }
       );
@@ -19,17 +19,17 @@ export async function POST(request: NextRequest) {
 
     const result = await prisma.$transaction(async (tx) => {
       // Buscar ou criar registro de estoque
-      let estoque = await tx.estoqueCanteiro.findUnique({
+      let estoque = await tx.estoqueViveiro.findUnique({
         where: {
-          produtoId_canteiroId: { produtoId, canteiroId },
+          produtoId_viveiroId: { produtoId, viveiroId },
         },
       });
 
       if (!estoque) {
-        estoque = await tx.estoqueCanteiro.create({
+        estoque = await tx.estoqueViveiro.create({
           data: {
             produtoId,
-            canteiroId,
+            viveiroId,
             quantidade: 0,
           },
         });
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Atualizar estoque
-      const estoqueAtualizado = await tx.estoqueCanteiro.update({
+      const estoqueAtualizado = await tx.estoqueViveiro.update({
         where: { id: estoque.id },
         data: { quantidade: novaQuantidade },
       });
@@ -72,4 +72,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

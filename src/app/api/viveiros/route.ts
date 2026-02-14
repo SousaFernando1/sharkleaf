@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const viveiros = await prisma.canteiro.findMany({
+    const viveiros = await prisma.viveiro.findMany({
       include: {
         estoques: {
           include: { produto: true },
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const viveiro = await prisma.canteiro.create({
+    const viveiro = await prisma.viveiro.create({
       data: {
         nome,
         capacidade: parseInt(capacidade),

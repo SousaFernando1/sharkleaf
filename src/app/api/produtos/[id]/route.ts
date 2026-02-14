@@ -11,7 +11,7 @@ export async function GET(
       where: { id },
       include: {
         estoques: {
-          include: { canteiro: true },
+          include: { viveiro: true },
         },
       },
     });
@@ -68,7 +68,7 @@ export async function DELETE(
     const { id } = await params;
 
     // Verificar se tem estoque
-    const estoqueTotal = await prisma.estoqueCanteiro.aggregate({
+    const estoqueTotal = await prisma.estoqueViveiro.aggregate({
       where: { produtoId: id },
       _sum: { quantidade: true },
     });

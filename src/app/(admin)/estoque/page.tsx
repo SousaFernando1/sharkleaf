@@ -15,12 +15,12 @@ import { Badge } from "@/components/ui/badge";
 import { EstoqueFormDialog } from "@/components/admin/estoque-form-dialog";
 
 async function getEstoque() {
-  const estoques = await prisma.estoqueCanteiro.findMany({
+  const estoques = await prisma.estoqueViveiro.findMany({
     include: {
       produto: true,
-      canteiro: true,
+      viveiro: true,
     },
-    orderBy: [{ produto: { nome: "asc" } }, { canteiro: { nome: "asc" } }],
+    orderBy: [{ produto: { nome: "asc" } }, { viveiro: { nome: "asc" } }],
   });
 
   const movimentacoes = await prisma.movimentacaoEstoque.findMany({
@@ -28,7 +28,7 @@ async function getEstoque() {
       estoque: {
         include: {
           produto: true,
-          canteiro: true,
+          viveiro: true,
         },
       },
     },
@@ -54,7 +54,7 @@ export default async function EstoquePage() {
         <EstoqueFormDialog />
       </div>
 
-      {/* Estoque por Produto/Canteiro */}
+      {/* Estoque por Produto/Viveiro */}
       <Card>
         <CardHeader>
           <CardTitle>Estoque por Produto e Viveiro</CardTitle>
@@ -80,7 +80,7 @@ export default async function EstoquePage() {
                     <TableCell className="font-medium">
                       {estoque.produto.nome}
                     </TableCell>
-                    <TableCell>{estoque.canteiro.nome}</TableCell>
+                    <TableCell>{estoque.viveiro.nome}</TableCell>
                     <TableCell>{estoque.quantidade}</TableCell>
                     <TableCell>{formatarData(estoque.updatedAt)}</TableCell>
                   </TableRow>
@@ -126,7 +126,7 @@ export default async function EstoquePage() {
                       </Badge>
                     </TableCell>
                     <TableCell>{mov.estoque.produto.nome}</TableCell>
-                    <TableCell>{mov.estoque.canteiro.nome}</TableCell>
+                    <TableCell>{mov.estoque.viveiro.nome}</TableCell>
                     <TableCell>{mov.quantidade}</TableCell>
                     <TableCell>{mov.motivo || "—"}</TableCell>
                     <TableCell>{formatarData(mov.createdAt)}</TableCell>

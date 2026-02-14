@@ -13,7 +13,7 @@ export async function GET(
         itens: {
           include: {
             produto: true,
-            canteiros: { include: { canteiro: true } },
+            viveiros: { include: { viveiro: true } },
           },
         },
         cliente: true,
@@ -66,7 +66,7 @@ export async function PATCH(
       include: {
         itens: {
           include: {
-            canteiros: true,
+            viveiros: true,
           },
         },
       },
@@ -84,28 +84,28 @@ export async function PATCH(
       await prisma.$transaction(async (tx) => {
         // Reverter estoque
         for (const item of pedidoAtual.itens) {
-          for (const canteiro of item.canteiros) {
-            const estoque = await tx.estoqueCanteiro.findUnique({
+          for (const viveiro of item.viveiros) {
+            const estoque = await tx.estoqueViveiro.findUnique({
               where: {
-                produtoId_canteiroId: {
+                produtoId_viveiroId: {
                   produtoId: item.produtoId,
-                  canteiroId: canteiro.canteiroId,
+                  viveiroId: viveiro.viveiroId,
                 },
               },
             });
 
             if (estoque) {
-              await tx.estoqueCanteiro.update({
+              await tx.estoqueViveiro.update({
                 where: { id: estoque.id },
                 data: {
-                  quantidade: estoque.quantidade + canteiro.quantidade,
+                  quantidade: estoque.quantidade + viveiro.quantidade,
                 },
               });
 
               await tx.movimentacaoEstoque.create({
                 data: {
                   tipo: "ENTRADA",
-                  quantidade: canteiro.quantidade,
+                  quantidade: viveiro.quantidade,
                   motivo: "CANCELAMENTO",
                   estoqueId: estoque.id,
                   pedidoId: id,
@@ -173,4 +173,3 @@ export async function PATCH(
     );
   }
 }
-

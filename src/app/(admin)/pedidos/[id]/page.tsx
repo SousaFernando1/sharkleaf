@@ -25,8 +25,8 @@ async function getPedido(id: string) {
       itens: {
         include: {
           produto: true,
-          canteiros: {
-            include: { canteiro: true },
+          viveiros: {
+            include: { viveiro: true },
           },
         },
       },
@@ -137,8 +137,8 @@ export default async function PedidoDetalhePage({
                   <TableCell>{formatarMoeda(item.precoUnitario)}</TableCell>
                   <TableCell>{formatarMoeda(item.subtotal)}</TableCell>
                   <TableCell>
-                    {item.canteiros
-                      .map((c) => `${c.canteiro.nome}: ${c.quantidade}`)
+                    {item.viveiros
+                      .map((v) => `${v.viveiro.nome}: ${v.quantidade}`)
                       .join(", ")}
                   </TableCell>
                 </TableRow>
