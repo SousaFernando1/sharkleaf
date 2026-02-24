@@ -126,3 +126,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Global clickable/pressed feedback for buttons */
+  [data-slot="button"],
+  button {
+    @apply cursor-pointer transition-transform duration-100 ease-in-out;
+  }
+
+  [data-slot="button"]:active,
+  button:active {
+    transform: translateY(1px) scale(0.98);
+  }
+}

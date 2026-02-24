@@ -60,10 +60,15 @@ export default function RegistroPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-green-50 to-white p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex items-center justify-center gap-2">
+          <Link
+            href="/"
+            className="mx-auto mb-2 inline-flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 active:scale-95 transition-transform"
+            aria-label="Ir para a página inicial"
+            title="Ir para a página inicial"
+          >
             <Leaf className="h-8 w-8 text-green-600" />
             <span className="text-2xl font-bold text-green-700">SharkLeaf</span>
-          </div>
+          </Link>
           <CardTitle className="text-xl">Criar sua conta</CardTitle>
         </CardHeader>
         <CardContent>
@@ -128,4 +133,3 @@ export default function RegistroPage() {
     </div>
   );
 }
-

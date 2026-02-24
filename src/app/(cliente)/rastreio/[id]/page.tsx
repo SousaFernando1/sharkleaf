@@ -2,13 +2,17 @@ export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { formatarData, formatarMoeda, getStatusLabel } from "@/lib/helpers";
+import { formatarData, formatarMoeda } from "@/lib/helpers";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Leaf, CheckCircle2, Circle, Package, Truck, Gift } from "lucide-react";
 import { ResgatarPontosButton } from "@/components/cliente/resgatar-pontos-button";
 import { RegistrarEscaneamento } from "@/components/cliente/registrar-escaneamento";
 import { TrilhaProduto } from "@/components/cliente/trilha-produto";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 const statusSteps = [
   { key: "RECEBIDO", label: "Pedido Recebido", icon: CheckCircle2 },
@@ -40,6 +44,8 @@ export default async function RastreioPage({
   if (!pedido) {
     notFound();
   }
+
+  const session = await getServerSession(authOptions);
 
   const statusIndex = statusSteps.findIndex((s) => s.key === pedido.status);
   const isCancelado = pedido.status === "CANCELADO";
@@ -189,8 +195,16 @@ export default async function RastreioPage({
             </div>
           </CardContent>
         </Card>
+        {session && (
+          <div className="pt-4">
+            <Link href="/portal">
+              <Button className="w-full bg-green-600 hover:bg-green-700">
+                Meus pedidos
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-

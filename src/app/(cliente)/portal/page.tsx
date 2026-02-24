@@ -22,6 +22,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Leaf, Award, Gift, Star, History } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import LogoutButton from "@/components/logout-button";
 
 async function getClienteData(clienteId: string) {
   const cliente = await prisma.cliente.findUnique({
@@ -61,7 +64,7 @@ export default async function PortalPage() {
   const titulo = getTituloProgressao(cliente.pontosTotais);
   const brindesDisponiveis = calcularBrindesDisponiveis(
     cliente.pontosTotais,
-    cliente.brindes.length
+    cliente.brindes.length,
   );
 
   // Progresso para o próximo título
@@ -80,7 +83,12 @@ export default async function PortalPage() {
             <Leaf className="h-8 w-8" />
             <h1 className="text-2xl font-bold">SharkLeaf</h1>
           </div>
-          <p className="mt-4 text-lg">Olá, {cliente.nome}! 👋</p>
+          <div className="mt-4 flex items-center justify-between">
+            <p className="text-lg">Olá, {cliente.nome}! 👋</p>
+            <div className="ml-auto">
+              <LogoutButton />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -179,7 +187,9 @@ export default async function PortalPage() {
                   <div
                     key={brinde.id}
                     className={`flex items-center justify-between rounded-lg border p-3 ${
-                      brinde.usado ? "bg-gray-50" : "bg-green-50 border-green-200"
+                      brinde.usado
+                        ? "bg-gray-50"
+                        : "bg-green-50 border-green-200"
                     }`}
                   >
                     <div>
@@ -242,6 +252,16 @@ export default async function PortalPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>{formatarData(pedido.createdAt)}</TableCell>
+                      <TableCell>
+                        <Link href={`/rastreio/${pedido.id}`}>
+                          <Button
+                            size="sm"
+                            className="bg-green-600 text-white hover:bg-green-700"
+                          >
+                            Ver pedido
+                          </Button>
+                        </Link>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -253,4 +273,3 @@ export default async function PortalPage() {
     </div>
   );
 }
-
