@@ -232,6 +232,7 @@ export default async function PortalPage() {
                     <TableHead>Pontos</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Data</TableHead>
+                    <TableHead>Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
