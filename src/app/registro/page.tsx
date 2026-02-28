@@ -62,7 +62,7 @@ export default function RegistroPage() {
         <CardHeader className="text-center">
           <Link
             href="/"
-            className="mx-auto mb-2 inline-flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 active:scale-95 transition-transform"
+            className="mx-auto mb-2 inline-flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-transform"
             aria-label="Ir para a página inicial"
             title="Ir para a página inicial"
           >
