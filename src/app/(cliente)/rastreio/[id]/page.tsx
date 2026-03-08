@@ -10,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Leaf, CheckCircle2, Circle, Package, Truck, Gift } from "lucide-react";
 import { ResgatarPontosButton } from "@/components/cliente/resgatar-pontos-button";
 import { RegistrarEscaneamento } from "@/components/cliente/registrar-escaneamento";
-import { TrilhaProduto } from "@/components/cliente/trilha-produto";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -157,11 +156,6 @@ export default async function RastreioPage({
             </div>
           </CardContent>
         </Card>
-
-        {/* Trilha dos Produtos */}
-        {pedido.itens.map((item) => (
-          <TrilhaProduto key={item.id} produtoNome={item.produto.nome} />
-        ))}
 
         {/* Resgate de Pontos */}
         {pedido.status === "PRONTO" && (

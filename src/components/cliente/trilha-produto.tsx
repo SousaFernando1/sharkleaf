@@ -9,6 +9,9 @@ interface TrilhaProdutoProps {
   produtoNome: string;
 }
 
+/**
+ * @deprecated Componente obsoleto — será removido em versão futura.
+ */
 export function TrilhaProduto({ produtoNome }: TrilhaProdutoProps) {
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,7 +22,7 @@ export function TrilhaProduto({ produtoNome }: TrilhaProdutoProps) {
     try {
       const res = await fetch(
         `/api/trilha/${encodeURIComponent(produtoNome)}`,
-        { cache: "force-cache" }
+        { cache: "force-cache" },
       );
       const data = await res.json();
       setInfo(data.info);
@@ -73,4 +76,3 @@ export function TrilhaProduto({ produtoNome }: TrilhaProdutoProps) {
     </Card>
   );
 }
-
