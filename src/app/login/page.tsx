@@ -58,7 +58,8 @@ function LoginForm() {
           // Buscar a sessão para determinar o tipo de usuário
           const sessionRes = await fetch("/api/auth/session");
           const session = await sessionRes.json();
-          const destino = session?.user?.tipo === "ADMIN" ? "/dashboard" : "/portal";
+          const destino =
+            session?.user?.tipo === "ADMIN" ? "/dashboard" : "/portal";
           router.push(destino);
         }
         router.refresh();
@@ -75,10 +76,15 @@ function LoginForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
-        <div className="mx-auto mb-2 flex items-center justify-center gap-2">
+        <Link
+          href="/"
+          className="mx-auto mb-2 inline-flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-transform"
+          aria-label="Ir para a página inicial"
+          title="Ir para a página inicial"
+        >
           <Leaf className="h-8 w-8 text-green-600" />
           <span className="text-2xl font-bold text-green-700">SharkLeaf</span>
-        </div>
+        </Link>
         <CardTitle className="text-xl">Entrar no sistema</CardTitle>
       </CardHeader>
       <CardContent>

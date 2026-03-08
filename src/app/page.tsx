@@ -40,11 +40,6 @@ export default function HomePage() {
               Acessar Painel
             </Button>
           </Link>
-          <Link href="/registro">
-            <Button size="lg" variant="outline">
-              Sou Cliente
-            </Button>
-          </Link>
         </div>
 
         {/* Features */}
@@ -93,9 +88,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t py-6 text-center text-sm text-muted-foreground">
-        <p>
-          © 2026 SharkLeaf — Sistema de Gestão e Gamificação para Viveiros
-        </p>
+        <p>© 2026 SharkLeaf — Sistema de Gestão e Gamificação para Viveiros</p>
         <p className="mt-1">
           Desenvolvido por Diego Formentin & Fernando Sousa — TCC IFSC Tubarão
         </p>
