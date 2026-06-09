@@ -2,7 +2,13 @@ export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { formatarData, formatarMoeda, getStatusLabel } from "@/lib/helpers";
+import {
+  formatarData,
+  formatarMoeda,
+  formatarNumeroMonetario,
+  getStatusLabel,
+  paraNumeroMonetario,
+} from "@/lib/helpers";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -17,6 +23,7 @@ import { ClipboardList, User, ScanLine, Star } from "lucide-react";
 import { PedidoStatusButtons } from "@/components/admin/pedido-status-buttons";
 import { QRCodeDisplay } from "@/components/qr-code-display";
 import { gerarQRCodeUrl } from "@/lib/helpers";
+import { normalizarPedidoStatus } from "@/lib/enums/pedido-status.enum";
 
 async function getPedido(id: string) {
   return prisma.pedido.findUnique({
@@ -30,7 +37,7 @@ async function getPedido(id: string) {
           },
         },
       },
-      cliente: true,
+      clienteResgate: true,
       escaneamentos: true,
     },
   });
@@ -48,6 +55,8 @@ export default async function PedidoDetalhePage({
     notFound();
   }
 
+  const statusAtual = normalizarPedidoStatus(pedido.status);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -55,11 +64,9 @@ export default async function PedidoDetalhePage({
           <h1 className="text-3xl font-bold tracking-tight">
             Pedido #{pedido.ticket}
           </h1>
-          <p className="text-muted-foreground">
-            Detalhes completos do pedido
-          </p>
+          <p className="text-muted-foreground">Detalhes completos do pedido</p>
         </div>
-        <PedidoStatusButtons pedidoId={pedido.id} statusAtual={pedido.status} />
+        <PedidoStatusButtons pedidoId={pedido.id} statusAtual={statusAtual} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -76,11 +83,13 @@ export default async function PedidoDetalhePage({
         <Card>
           <CardHeader className="flex flex-row items-center gap-2 space-y-0 pb-2">
             <User className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-sm font-medium">Cliente</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Cliente Resgate
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="font-medium">
-              {pedido.cliente?.nome || "Pontos não resgatados"}
+              {pedido.clienteResgate?.nome || "Pontos não resgatados"}
             </p>
           </CardContent>
         </Card>
@@ -146,11 +155,12 @@ export default async function PedidoDetalhePage({
             </TableBody>
           </Table>
           <div className="mt-4 flex justify-end gap-4 border-t pt-4">
-            {pedido.desconto != null && pedido.desconto > 0 && (
-              <p className="text-sm text-muted-foreground">
-                Desconto: {pedido.desconto}%
-              </p>
-            )}
+            {pedido.desconto != null &&
+              paraNumeroMonetario(pedido.desconto) > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  Desconto: {formatarNumeroMonetario(pedido.desconto)}%
+                </p>
+              )}
             <p className="text-lg font-bold">
               Total: {formatarMoeda(pedido.valorTotal)}
             </p>
@@ -174,7 +184,6 @@ export default async function PedidoDetalhePage({
               <TableHeader>
                 <TableRow>
                   <TableHead>Quem</TableHead>
-                  <TableHead>Localização</TableHead>
                   <TableHead>Data/Hora</TableHead>
                 </TableRow>
               </TableHeader>
@@ -182,7 +191,6 @@ export default async function PedidoDetalhePage({
                 {pedido.escaneamentos.map((esc) => (
                   <TableRow key={esc.id}>
                     <TableCell>{esc.nome || "Visitante"}</TableCell>
-                    <TableCell>{esc.localizacao || "—"}</TableCell>
                     <TableCell>{formatarData(esc.createdAt)}</TableCell>
                   </TableRow>
                 ))}
@@ -194,4 +202,3 @@ export default async function PedidoDetalhePage({
     </div>
   );
 }
-

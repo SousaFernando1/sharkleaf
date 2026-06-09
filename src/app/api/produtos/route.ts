@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { arredondarValorMonetario } from "@/lib/helpers";
 
 export async function GET() {
   try {
@@ -15,7 +16,7 @@ export async function GET() {
   } catch (error) {
     return NextResponse.json(
       { error: "Erro ao buscar produtos" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
     if (!nome) {
       return NextResponse.json(
         { error: "Nome é obrigatório" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
         nome,
         categoria: categoria || null,
         descricao: descricao || null,
-        precoUnitario: precoUnitario || 0,
+        precoUnitario: arredondarValorMonetario(precoUnitario || 0),
       },
     });
 
@@ -45,8 +46,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       { error: "Erro ao criar produto" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

@@ -2,7 +2,12 @@ export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { formatarData, formatarMoeda } from "@/lib/helpers";
+import {
+  formatarData,
+  formatarMoeda,
+  formatarNumeroMonetario,
+  paraNumeroMonetario,
+} from "@/lib/helpers";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -12,13 +17,27 @@ import { ResgatarPontosButton } from "@/components/cliente/resgatar-pontos-butto
 import { RegistrarEscaneamento } from "@/components/cliente/registrar-escaneamento";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import {
+  getPedidoStatusLabel,
+  normalizarPedidoStatus,
+  PEDIDO_STATUS,
+  PEDIDO_STATUS_FLUXO,
+  type PedidoStatus,
+} from "@/lib/enums/pedido-status.enum";
 
-const statusSteps = [
-  { key: "RECEBIDO", label: "Pedido Recebido", icon: CheckCircle2 },
-  { key: "PRODUCAO", label: "Em Produção", icon: Package },
-  { key: "EMPACOTAMENTO", label: "Empacotamento", icon: Truck },
-  { key: "PRONTO", label: "Concluído na Bancada", icon: Gift },
-];
+const statusStepIcons: Record<PedidoStatus, typeof CheckCircle2> = {
+  RECEBIDO: CheckCircle2,
+  PRODUCAO: Package,
+  EMPACOTAMENTO: Truck,
+  PRONTO: Gift,
+  CANCELADO: Circle,
+};
+
+const statusSteps = PEDIDO_STATUS_FLUXO.map((status) => ({
+  key: status,
+  label: getPedidoStatusLabel(status),
+  icon: statusStepIcons[status],
+}));
 
 async function getPedido(id: string) {
   return prisma.pedido.findUnique({
@@ -27,7 +46,7 @@ async function getPedido(id: string) {
       itens: {
         include: { produto: true },
       },
-      cliente: true,
+      clienteResgate: true,
     },
   });
 }
@@ -45,9 +64,10 @@ export default async function RastreioPage({
   }
 
   const session = await getServerSession(authOptions);
+  const statusAtual = normalizarPedidoStatus(pedido.status);
 
-  const statusIndex = statusSteps.findIndex((s) => s.key === pedido.status);
-  const isCancelado = pedido.status === "CANCELADO";
+  const statusIndex = statusSteps.findIndex((s) => s.key === statusAtual);
+  const isCancelado = statusAtual === PEDIDO_STATUS.CANCELADO;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
@@ -145,11 +165,12 @@ export default async function RastreioPage({
               ))}
             </div>
             <div className="mt-4 flex justify-end border-t pt-3">
-              {pedido.desconto != null && pedido.desconto > 0 && (
-                <p className="mr-4 text-sm text-muted-foreground">
-                  Desconto: {pedido.desconto}%
-                </p>
-              )}
+              {pedido.desconto != null &&
+                paraNumeroMonetario(pedido.desconto) > 0 && (
+                  <p className="mr-4 text-sm text-muted-foreground">
+                    Desconto: {formatarNumeroMonetario(pedido.desconto)}%
+                  </p>
+                )}
               <p className="text-lg font-bold">
                 Total: {formatarMoeda(pedido.valorTotal)}
               </p>
@@ -158,7 +179,7 @@ export default async function RastreioPage({
         </Card>
 
         {/* Resgate de Pontos */}
-        {pedido.status === "PRONTO" && (
+        {statusAtual === PEDIDO_STATUS.PRONTO && (
           <Card className="border-green-200 bg-green-50">
             <CardHeader>
               <CardTitle className="text-lg text-green-700">

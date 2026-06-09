@@ -19,7 +19,7 @@ model Usuario {
   id        String   @id @default(cuid())
   email     String   @unique
   senha     String // Hash bcrypt
-  tipo      String   @default("CLIENTE") // ADMIN, CLIENTE
+  tipo      String   @default("CLIENTE") // Dominio fechado validado na aplicacao: ADMIN, CLIENTE
   clienteId String?  @unique
   cliente   Cliente? @relation(fields: [clienteId], references: [id])
   createdAt DateTime @default(now())
@@ -61,7 +61,7 @@ model Produto {
   nome          String
   categoria     String?
   descricao     String?
-  precoUnitario Float             @default(0)
+  precoUnitario Decimal           @default(0)
   estoques      EstoqueViveiro[]
   itensPedido   ItemPedido[]
   createdAt     DateTime          @default(now())
@@ -84,7 +84,7 @@ model EstoqueViveiro {
 
 model MovimentacaoEstoque {
   id        String           @id @default(cuid())
-  tipo      String // ENTRADA, SAIDA
+  tipo      String // Dominio fechado validado na aplicacao: ENTRADA, SAIDA
   quantidade Int
   motivo    String? // AJUSTE_MANUAL, PEDIDO, CANCELAMENTO
   estoqueId String
@@ -100,16 +100,16 @@ model MovimentacaoEstoque {
 
 model Pedido {
   id            String                @id @default(cuid())
-  status        String                @default("RECEBIDO") // RECEBIDO, PRODUCAO, EMPACOTAMENTO, PRONTO, CANCELADO
+  status        String                @default("RECEBIDO") // Dominio fechado validado na aplicacao: RECEBIDO, PRODUCAO, EMPACOTAMENTO, PRONTO, CANCELADO
   qrCode        String                @unique
   ticket        String                @unique // Código alfanumérico curto
-  valorTotal    Float                 @default(0) // Soma de todos os itens
-  desconto      Float?                @default(0) // Desconto em porcentagem (%)
-  codigoBrinde  String? // Código de brinde usado (se houver)
+  valorTotal    Decimal               @default(0) // Soma de todos os itens
+  desconto      Decimal?              @default(0) // Desconto em porcentagem (%)
   pontosGerados Int                   @default(0) // 1 ponto por unidade de produto
   resgatado     Boolean               @default(false)
-  clienteId     String?
-  cliente       Cliente?              @relation(fields: [clienteId], references: [id])
+  clienteResgateId String?
+  clienteResgate   Cliente?           @relation(fields: [clienteResgateId], references: [id])
+  brindeUsado   Brinde?
   itens         ItemPedido[]
   escaneamentos EscaneamentoQR[]
   movimentacoes MovimentacaoEstoque[]
@@ -120,8 +120,8 @@ model Pedido {
 model ItemPedido {
   id            String               @id @default(cuid())
   quantidade    Int // Quantidade total deste produto no pedido
-  precoUnitario Float // Snapshot do preço no momento da compra
-  subtotal      Float // quantidade * precoUnitario
+  precoUnitario Decimal // Snapshot do preço no momento da compra
+  subtotal      Decimal // quantidade * precoUnitario
   pedidoId      String
   pedido        Pedido               @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
   produtoId     String
@@ -139,6 +139,8 @@ model ItemPedidoViveiro {
   viveiroId    String
   viveiro      Viveiro    @relation(fields: [viveiroId], references: [id])
   createdAt    DateTime   @default(now())
+
+  @@unique([itemPedidoId, viveiroId])
 }
 
 // ==========================================
@@ -152,7 +154,6 @@ model EscaneamentoQR {
   clienteId   String?
   cliente     Cliente? @relation(fields: [clienteId], references: [id])
   nome        String? // Nome do cliente ou "Visitante"
-  localizacao String? // Cidade/Estado ou coordenadas
   ip          String?
   userAgent   String?
   createdAt   DateTime @default(now())
@@ -165,13 +166,12 @@ model EscaneamentoQR {
 model Cliente {
   id            String           @id @default(cuid())
   nome          String
-  email         String           @unique
   telefone      String?
   endereco      String?
   pontosTotais  Int              @default(0)
   usuario       Usuario?
   brindes       Brinde[]
-  pedidos       Pedido[]
+  pedidosResgatados Pedido[]
   escaneamentos EscaneamentoQR[]
   medalhas      MedalhaCliente[]
   createdAt     DateTime         @default(now())
@@ -183,7 +183,8 @@ model Brinde {
   codigo    String    @unique
   usado     Boolean   @default(false)
   usadoEm   DateTime?
-  pedidoId  String? // Pedido onde o código foi usado
+  pedidoId  String?   @unique // Pedido onde o código foi usado
+  pedido    Pedido?   @relation(fields: [pedidoId], references: [id])
   clienteId String
   cliente   Cliente   @relation(fields: [clienteId], references: [id])
   createdAt DateTime  @default(now())

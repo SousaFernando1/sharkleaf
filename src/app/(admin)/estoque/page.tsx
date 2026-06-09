@@ -2,6 +2,10 @@ export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/prisma";
 import { formatarData } from "@/lib/helpers";
+import {
+  MOVIMENTACAO_ESTOQUE_TIPO,
+  type MovimentacaoEstoqueTipo,
+} from "@/lib/enums/movimentacao-estoque-tipo.enum";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -13,6 +17,12 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { EstoqueFormDialog } from "@/components/admin/estoque-form-dialog";
+
+function getMovimentacaoBadgeVariant(tipo: string) {
+  return tipo === MOVIMENTACAO_ESTOQUE_TIPO.ENTRADA
+    ? ("default" as const)
+    : ("destructive" as const);
+}
 
 async function getEstoque() {
   const estoques = await prisma.estoqueViveiro.findMany({
@@ -118,9 +128,9 @@ export default async function EstoquePage() {
                   <TableRow key={mov.id}>
                     <TableCell>
                       <Badge
-                        variant={
-                          mov.tipo === "ENTRADA" ? "default" : "destructive"
-                        }
+                        variant={getMovimentacaoBadgeVariant(
+                          mov.tipo as MovimentacaoEstoqueTipo,
+                        )}
                       >
                         {mov.tipo}
                       </Badge>
@@ -140,4 +150,3 @@ export default async function EstoquePage() {
     </div>
   );
 }
-

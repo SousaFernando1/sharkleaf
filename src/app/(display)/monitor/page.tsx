@@ -4,14 +4,48 @@ import useSWR from "swr";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Leaf } from "lucide-react";
+import {
+  normalizarPedidoStatus,
+  PEDIDO_STATUS,
+  type PedidoStatus,
+} from "@/lib/enums/pedido-status.enum";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-const statusConfig: Record<string, { label: string; border: string; bg: string; badgeBg: string }> = {
-  RECEBIDO: { label: "📋 Recebido", border: "border-blue-400", bg: "bg-blue-950/30", badgeBg: "bg-blue-600" },
-  PRODUCAO: { label: "🔄 Em Produção", border: "border-amber-400", bg: "bg-amber-950/30", badgeBg: "bg-amber-600" },
-  EMPACOTAMENTO: { label: "📦 Empacotamento", border: "border-orange-400", bg: "bg-orange-950/30", badgeBg: "bg-orange-600" },
-  PRONTO: { label: "✅ Pronto", border: "border-green-400", bg: "bg-green-950/50", badgeBg: "bg-green-600" },
+const statusConfig: Record<
+  PedidoStatus,
+  { label: string; border: string; bg: string; badgeBg: string }
+> = {
+  RECEBIDO: {
+    label: "📋 Recebido",
+    border: "border-blue-400",
+    bg: "bg-blue-950/30",
+    badgeBg: "bg-blue-600",
+  },
+  PRODUCAO: {
+    label: "🔄 Em Produção",
+    border: "border-amber-400",
+    bg: "bg-amber-950/30",
+    badgeBg: "bg-amber-600",
+  },
+  EMPACOTAMENTO: {
+    label: "📦 Empacotamento",
+    border: "border-orange-400",
+    bg: "bg-orange-950/30",
+    badgeBg: "bg-orange-600",
+  },
+  PRONTO: {
+    label: "✅ Pronto",
+    border: "border-green-400",
+    bg: "bg-green-950/50",
+    badgeBg: "bg-green-600",
+  },
+  CANCELADO: {
+    label: "❌ Cancelado",
+    border: "border-red-400",
+    bg: "bg-red-950/30",
+    badgeBg: "bg-red-600",
+  },
 };
 
 export default function MonitorPage() {
@@ -42,9 +76,7 @@ export default function MonitorPage() {
         </div>
       ) : !pedidos || pedidos.length === 0 ? (
         <div className="flex items-center justify-center py-20">
-          <p className="text-xl text-green-300">
-            Nenhum pedido no momento
-          </p>
+          <p className="text-xl text-green-300">Nenhum pedido no momento</p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -56,7 +88,10 @@ export default function MonitorPage() {
               cliente: string | null;
               itens: string[];
             }) => {
-              const config = statusConfig[pedido.status] || statusConfig.RECEBIDO;
+              const statusAtual = normalizarPedidoStatus(pedido.status);
+              const config =
+                statusConfig[statusAtual] ||
+                statusConfig[PEDIDO_STATUS.RECEBIDO];
               return (
                 <Card
                   key={pedido.id}
@@ -67,24 +102,22 @@ export default function MonitorPage() {
                       <span className="font-mono text-lg font-bold text-white">
                         #{pedido.ticket}
                       </span>
-                      <Badge
-                        variant="secondary"
-                        className={config.badgeBg}
-                      >
+                      <Badge variant="secondary" className={config.badgeBg}>
                         {config.label}
                       </Badge>
                     </div>
                     <p className="text-sm text-green-200">
-                      {pedido.cliente || "Cliente não definido"}
+                      {pedido.cliente
+                        ? `Resgatado por ${pedido.cliente}`
+                        : "Aguardando resgate"}
                     </p>
                   </CardContent>
                 </Card>
               );
-            }
+            },
           )}
         </div>
       )}
     </div>
   );
 }
-

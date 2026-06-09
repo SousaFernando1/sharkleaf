@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { USUARIO_TIPO } from "@/lib/enums/usuario-tipo.enum";
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,14 +11,14 @@ export async function POST(request: NextRequest) {
     if (!nome || !email || !password) {
       return NextResponse.json(
         { error: "Nome, email e senha são obrigatórios" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (password.length < 6) {
       return NextResponse.json(
         { error: "A senha deve ter pelo menos 6 caracteres" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
     if (existente) {
       return NextResponse.json(
         { error: "Este email já está cadastrado" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -40,7 +41,6 @@ export async function POST(request: NextRequest) {
       const cliente = await tx.cliente.create({
         data: {
           nome,
-          email,
         },
       });
 
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         data: {
           email,
           senha: senhaHash,
-          tipo: "CLIENTE",
+          tipo: USUARIO_TIPO.CLIENTE,
           clienteId: cliente.id,
         },
       });
@@ -62,10 +62,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Erro ao criar conta:", error);
-    return NextResponse.json(
-      { error: "Erro ao criar conta" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Erro ao criar conta" }, { status: 500 });
   }
 }
-

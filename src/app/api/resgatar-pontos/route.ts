@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { gerarCodigoBrinde } from "@/lib/helpers";
+import { PEDIDO_STATUS } from "@/lib/enums/pedido-status.enum";
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function POST(request: NextRequest) {
     if (!session || !session.user.clienteId) {
       return NextResponse.json(
         { error: "Você precisa estar logado para resgatar pontos" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
     if (!pedidoId) {
       return NextResponse.json(
         { error: "pedidoId é obrigatório" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -33,21 +34,21 @@ export async function POST(request: NextRequest) {
     if (!pedido) {
       return NextResponse.json(
         { error: "Pedido não encontrado" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
-    if (pedido.status !== "PRONTO") {
+    if (pedido.status !== PEDIDO_STATUS.PRONTO) {
       return NextResponse.json(
         { error: "Só é possível resgatar pontos de pedidos com status PRONTO" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (pedido.resgatado) {
       return NextResponse.json(
         { error: "Os pontos deste pedido já foram resgatados" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
         where: { id: pedidoId },
         data: {
           resgatado: true,
-          clienteId: session.user.clienteId,
+          clienteResgateId: session.user.clienteId,
         },
       });
 
@@ -75,9 +76,7 @@ export async function POST(request: NextRequest) {
         where: { clienteId: session.user.clienteId! },
       });
 
-      const brindesPossiveis = Math.floor(
-        clienteAtualizado.pontosTotais / 100
-      );
+      const brindesPossiveis = Math.floor(clienteAtualizado.pontosTotais / 100);
 
       const brindesParaGerar = brindesPossiveis - brindesExistentes;
 
@@ -103,8 +102,7 @@ export async function POST(request: NextRequest) {
     console.error("Erro ao resgatar pontos:", error);
     return NextResponse.json(
       { error: "Erro ao resgatar pontos" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

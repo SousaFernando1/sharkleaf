@@ -1,5 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { USUARIO_TIPO } from "@/lib/enums/usuario-tipo.enum";
 
 async function main() {
   let prisma: PrismaClient;
@@ -30,7 +31,7 @@ async function main() {
     data: {
       email: "admin@sharkleaf.com",
       senha: senhaAdmin,
-      tipo: "ADMIN",
+      tipo: USUARIO_TIPO.ADMIN,
     },
   });
   console.log("✅ Admin criado:", admin.email);
@@ -99,7 +100,7 @@ async function main() {
       nome: "Muda de Eucalipto",
       categoria: "Eucalipto",
       descricao: "Muda de Eucalipto Grandis de alta qualidade",
-      precoUnitario: 2.5,
+      precoUnitario: new Prisma.Decimal(2.5),
     },
   });
 
@@ -108,7 +109,7 @@ async function main() {
       nome: "Muda de Pinus",
       categoria: "Pinus",
       descricao: "Muda de Pinus Elliottii para reflorestamento",
-      precoUnitario: 3.0,
+      precoUnitario: new Prisma.Decimal(3.0),
     },
   });
 
@@ -117,7 +118,7 @@ async function main() {
       nome: "Muda de Acácia",
       categoria: "Nativas",
       descricao: "Muda de Acácia Negra para diversas finalidades",
-      precoUnitario: 4.0,
+      precoUnitario: new Prisma.Decimal(4.0),
     },
   });
   console.log("✅ Produtos criados: Eucalipto, Pinus, Acácia");

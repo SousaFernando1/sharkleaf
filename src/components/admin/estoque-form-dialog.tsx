@@ -21,6 +21,11 @@ import {
 } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import {
+  isMovimentacaoEstoqueTipo,
+  MOVIMENTACAO_ESTOQUE_TIPO,
+  type MovimentacaoEstoqueTipo,
+} from "@/lib/enums/movimentacao-estoque-tipo.enum";
 
 interface Produto {
   id: string;
@@ -38,7 +43,9 @@ export function EstoqueFormDialog() {
   const [loading, setLoading] = useState(false);
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [viveiros, setViveiros] = useState<Viveiro[]>([]);
-  const [tipo, setTipo] = useState<string>("ENTRADA");
+  const [tipo, setTipo] = useState<MovimentacaoEstoqueTipo>(
+    MOVIMENTACAO_ESTOQUE_TIPO.ENTRADA,
+  );
   const [produtoId, setProdutoId] = useState<string>("");
   const [viveiroId, setViveiroId] = useState<string>("");
 
@@ -78,7 +85,9 @@ export function EstoqueFormDialog() {
         return;
       }
 
-      toast.success(`Estoque ${tipo === "ENTRADA" ? "adicionado" : "removido"} com sucesso!`);
+      toast.success(
+        `Estoque ${tipo === MOVIMENTACAO_ESTOQUE_TIPO.ENTRADA ? "adicionado" : "removido"} com sucesso!`,
+      );
       setOpen(false);
       router.refresh();
     } catch {
@@ -103,13 +112,24 @@ export function EstoqueFormDialog() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label>Tipo *</Label>
-            <Select value={tipo} onValueChange={setTipo}>
+            <Select
+              value={tipo}
+              onValueChange={(value) => {
+                if (isMovimentacaoEstoqueTipo(value)) {
+                  setTipo(value);
+                }
+              }}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ENTRADA">➕ Entrada</SelectItem>
-                <SelectItem value="SAIDA">➖ Saída</SelectItem>
+                <SelectItem value={MOVIMENTACAO_ESTOQUE_TIPO.ENTRADA}>
+                  ➕ Entrada
+                </SelectItem>
+                <SelectItem value={MOVIMENTACAO_ESTOQUE_TIPO.SAIDA}>
+                  ➖ Saída
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -175,4 +195,3 @@ export function EstoqueFormDialog() {
     </Dialog>
   );
 }
-

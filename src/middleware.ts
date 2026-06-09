@@ -1,5 +1,6 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import { USUARIO_TIPO } from "@/lib/enums/usuario-tipo.enum";
 
 export default withAuth(
   function middleware(req) {
@@ -7,8 +8,16 @@ export default withAuth(
     const pathname = req.nextUrl.pathname;
 
     // Rotas admin: apenas usuários com tipo ADMIN
-    if (pathname.startsWith("/dashboard") || pathname.startsWith("/pedidos") || pathname.startsWith("/produtos") || pathname.startsWith("/clientes") || pathname.startsWith("/viveiros") || pathname.startsWith("/estoque") || pathname.startsWith("/config")) {
-      if (token?.tipo !== "ADMIN") {
+    if (
+      pathname.startsWith("/dashboard") ||
+      pathname.startsWith("/pedidos") ||
+      pathname.startsWith("/produtos") ||
+      pathname.startsWith("/clientes") ||
+      pathname.startsWith("/viveiros") ||
+      pathname.startsWith("/estoque") ||
+      pathname.startsWith("/config")
+    ) {
+      if (token?.tipo !== USUARIO_TIPO.ADMIN) {
         return NextResponse.redirect(new URL("/login", req.url));
       }
     }
@@ -43,7 +52,7 @@ export default withAuth(
         return !!token;
       },
     },
-  }
+  },
 );
 
 export const config = {
@@ -52,4 +61,3 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|api/auth).*)",
   ],
 };
-
