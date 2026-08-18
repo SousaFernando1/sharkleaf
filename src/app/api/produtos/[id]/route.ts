@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { arredondarValorMonetario } from "@/lib/helpers";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -19,22 +20,22 @@ export async function GET(
     if (!produto) {
       return NextResponse.json(
         { error: "Produto não encontrado" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     return NextResponse.json(produto);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Erro ao buscar produto" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -47,22 +48,25 @@ export async function PUT(
         nome,
         categoria: categoria || null,
         descricao: descricao || null,
-        precoUnitario: precoUnitario ?? undefined,
+        precoUnitario:
+          precoUnitario == null
+            ? undefined
+            : arredondarValorMonetario(precoUnitario),
       },
     });
 
     return NextResponse.json(produto);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Erro ao atualizar produto" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -76,18 +80,17 @@ export async function DELETE(
     if (estoqueTotal._sum.quantidade && estoqueTotal._sum.quantidade > 0) {
       return NextResponse.json(
         { error: "Não é possível excluir produto com estoque" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     await prisma.produto.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Erro ao excluir produto" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

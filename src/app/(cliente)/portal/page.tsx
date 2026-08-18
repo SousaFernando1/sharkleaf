@@ -33,7 +33,7 @@ async function getClienteData(clienteId: string) {
       brindes: {
         orderBy: { createdAt: "desc" },
       },
-      pedidos: {
+      pedidosResgatados: {
         include: {
           itens: { include: { produto: true } },
         },
@@ -219,7 +219,7 @@ export default async function PortalPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {cliente.pedidos.length === 0 ? (
+            {cliente.pedidosResgatados.length === 0 ? (
               <p className="py-4 text-center text-muted-foreground">
                 Você ainda não resgatou pontos de nenhum pedido
               </p>
@@ -236,7 +236,7 @@ export default async function PortalPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {cliente.pedidos.map((pedido) => (
+                  {cliente.pedidosResgatados.map((pedido) => (
                     <TableRow key={pedido.id}>
                       <TableCell className="font-mono font-medium">
                         {pedido.ticket}

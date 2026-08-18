@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { isUsuarioTipo } from "@/lib/enums/usuario-tipo.enum";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -27,11 +28,15 @@ export const authOptions: NextAuthOptions = {
 
         const senhaValida = await bcrypt.compare(
           credentials.password,
-          usuario.senha
+          usuario.senha,
         );
 
         if (!senhaValida) {
           throw new Error("Email ou senha inválidos");
+        }
+
+        if (!isUsuarioTipo(usuario.tipo)) {
+          throw new Error("Tipo de usuário inválido");
         }
 
         return {
@@ -48,18 +53,18 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.tipo = (user as any).tipo;
-        token.clienteId = (user as any).clienteId;
-        token.nome = (user as any).nome;
+        token.tipo = user.tipo;
+        token.clienteId = user.clienteId;
+        token.nome = user.nome;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).tipo = token.tipo;
-        (session.user as any).clienteId = token.clienteId;
-        (session.user as any).nome = token.nome;
+        session.user.id = token.id;
+        session.user.tipo = token.tipo;
+        session.user.clienteId = token.clienteId;
+        session.user.nome = token.nome;
       }
       return session;
     },
@@ -73,4 +78,3 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   debug: false,
 };
-

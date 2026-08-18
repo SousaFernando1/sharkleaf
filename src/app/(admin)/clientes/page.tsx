@@ -16,8 +16,13 @@ import {
 async function getClientes() {
   return prisma.cliente.findMany({
     include: {
+      usuario: {
+        select: {
+          email: true,
+        },
+      },
       _count: {
-        select: { pedidos: true, brindes: true },
+        select: { pedidosResgatados: true, brindes: true },
       },
     },
     orderBy: { createdAt: "desc" },
@@ -66,14 +71,14 @@ export default async function ClientesPage() {
                       <TableCell className="font-medium">
                         {cliente.nome}
                       </TableCell>
-                      <TableCell>{cliente.email}</TableCell>
+                      <TableCell>{cliente.usuario?.email || "—"}</TableCell>
                       <TableCell>{cliente.pontosTotais}</TableCell>
                       <TableCell>
                         <Badge variant="outline">
                           {titulo.icone} {titulo.titulo}
                         </Badge>
                       </TableCell>
-                      <TableCell>{cliente._count.pedidos}</TableCell>
+                      <TableCell>{cliente._count.pedidosResgatados}</TableCell>
                       <TableCell>{cliente._count.brindes}</TableCell>
                       <TableCell>{formatarData(cliente.createdAt)}</TableCell>
                     </TableRow>

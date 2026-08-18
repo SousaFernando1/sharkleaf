@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Leaf } from "lucide-react";
 import { toast } from "sonner";
+import { USUARIO_TIPO } from "@/lib/enums/usuario-tipo.enum";
 
 function LoginForm() {
   const router = useRouter();
@@ -59,7 +60,9 @@ function LoginForm() {
           const sessionRes = await fetch("/api/auth/session");
           const session = await sessionRes.json();
           const destino =
-            session?.user?.tipo === "ADMIN" ? "/dashboard" : "/portal";
+            session?.user?.tipo === USUARIO_TIPO.ADMIN
+              ? "/dashboard"
+              : "/portal";
           router.push(destino);
         }
         router.refresh();

@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
+import { PEDIDO_STATUS } from "@/lib/enums/pedido-status.enum";
 import {
   ClipboardList,
   Package,
@@ -21,9 +22,11 @@ async function getDashboardData() {
     totalEscaneamentos,
     pedidosResgatados,
   ] = await Promise.all([
-    prisma.pedido.count({ where: { status: { not: "CANCELADO" } } }),
-    prisma.pedido.count({ where: { status: "PRODUCAO" } }),
-    prisma.pedido.count({ where: { status: "PRONTO" } }),
+    prisma.pedido.count({
+      where: { status: { not: PEDIDO_STATUS.CANCELADO } },
+    }),
+    prisma.pedido.count({ where: { status: PEDIDO_STATUS.PRODUCAO } }),
+    prisma.pedido.count({ where: { status: PEDIDO_STATUS.PRONTO } }),
     prisma.produto.count(),
     prisma.cliente.count(),
     prisma.escaneamentoQR.count(),
@@ -104,9 +107,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Visão geral do seu viveiro
-        </p>
+        <p className="text-muted-foreground">Visão geral do seu viveiro</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -159,4 +160,3 @@ export default async function DashboardPage() {
     </div>
   );
 }
-

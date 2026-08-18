@@ -8,12 +8,12 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     const body = await request.json();
-    const { pedidoId, localizacao } = body;
+    const { pedidoId } = body;
 
     if (!pedidoId) {
       return NextResponse.json(
         { error: "pedidoId é obrigatório" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -29,7 +29,6 @@ export async function POST(request: NextRequest) {
         pedidoId,
         clienteId: session?.user?.clienteId || null,
         nome: session?.user?.nome || "Visitante",
-        localizacao: localizacao || null,
         ip,
         userAgent,
       },
@@ -39,8 +38,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       { error: "Erro ao registrar escaneamento" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

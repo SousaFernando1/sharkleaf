@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  isMovimentacaoEstoqueTipo,
+  MOVIMENTACAO_ESTOQUE_TIPO,
+} from "@/lib/enums/movimentacao-estoque-tipo.enum";
 
 // Ajuste manual de estoque
 export async function POST(request: NextRequest) {
@@ -13,7 +17,14 @@ export async function POST(request: NextRequest) {
           error:
             "produtoId, viveiroId, quantidade e tipo (ENTRADA/SAIDA) são obrigatórios",
         },
-        { status: 400 }
+        { status: 400 },
+      );
+    }
+
+    if (!isMovimentacaoEstoqueTipo(tipo)) {
+      return NextResponse.json(
+        { error: "Tipo de movimentação inválido" },
+        { status: 400 },
       );
     }
 
@@ -37,7 +48,7 @@ export async function POST(request: NextRequest) {
 
       const qtd = parseInt(quantidade);
       const novaQuantidade =
-        tipo === "ENTRADA"
+        tipo === MOVIMENTACAO_ESTOQUE_TIPO.ENTRADA
           ? estoque.quantidade + qtd
           : estoque.quantidade - qtd;
 
@@ -65,10 +76,13 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || "Erro ao ajustar estoque" },
-      { status: 400 }
+      {
+        error:
+          error instanceof Error ? error.message : "Erro ao ajustar estoque",
+      },
+      { status: 400 },
     );
   }
 }

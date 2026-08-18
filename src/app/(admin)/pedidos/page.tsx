@@ -2,7 +2,12 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { formatarData, formatarMoeda, getStatusLabel } from "@/lib/helpers";
+import {
+  formatarData,
+  formatarMoeda,
+  getStatusColor,
+  getStatusLabel,
+} from "@/lib/helpers";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,27 +29,10 @@ async function getPedidos() {
           produto: true,
         },
       },
-      cliente: true,
+      clienteResgate: true,
     },
     orderBy: { createdAt: "desc" },
   });
-}
-
-function getStatusBadgeVariant(status: string) {
-  switch (status) {
-    case "RECEBIDO":
-      return "outline" as const;
-    case "PRODUCAO":
-      return "secondary" as const;
-    case "EMPACOTAMENTO":
-      return "default" as const;
-    case "PRONTO":
-      return "default" as const;
-    case "CANCELADO":
-      return "destructive" as const;
-    default:
-      return "outline" as const;
-  }
 }
 
 export default async function PedidosPage() {
@@ -84,7 +72,7 @@ export default async function PedidosPage() {
                   <TableHead>Produtos</TableHead>
                   <TableHead>Valor Total</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Cliente</TableHead>
+                  <TableHead>Cliente Resgate</TableHead>
                   <TableHead>Data</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -102,13 +90,11 @@ export default async function PedidosPage() {
                     </TableCell>
                     <TableCell>{formatarMoeda(pedido.valorTotal)}</TableCell>
                     <TableCell>
-                      <Badge variant={getStatusBadgeVariant(pedido.status)}>
+                      <Badge variant={getStatusColor(pedido.status)}>
                         {getStatusLabel(pedido.status)}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      {pedido.cliente?.nome || "—"}
-                    </TableCell>
+                    <TableCell>{pedido.clienteResgate?.nome || "—"}</TableCell>
                     <TableCell>{formatarData(pedido.createdAt)}</TableCell>
                     <TableCell className="text-right">
                       <Link href={`/pedidos/${pedido.id}`}>
@@ -127,4 +113,3 @@ export default async function PedidosPage() {
     </div>
   );
 }
-

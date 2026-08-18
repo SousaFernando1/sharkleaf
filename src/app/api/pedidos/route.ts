@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { gerarTicket } from "@/lib/helpers";
+import {
+  arredondarValorMonetario,
+  gerarTicket,
+  paraNumeroMonetario,
+} from "@/lib/helpers";
+import { MOVIMENTACAO_ESTOQUE_TIPO } from "@/lib/enums/movimentacao-estoque-tipo.enum";
 
 interface ItemInput {
   produtoId: string;
@@ -15,15 +20,15 @@ export async function GET() {
         itens: {
           include: { produto: true },
         },
-        cliente: true,
+        clienteResgate: true,
       },
       orderBy: { createdAt: "desc" },
     });
     return NextResponse.json(pedidos);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Erro ao buscar pedidos" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -40,7 +45,7 @@ export async function POST(request: NextRequest) {
     if (!itens || itens.length === 0) {
       return NextResponse.json(
         { error: "O pedido deve ter pelo menos um item" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -61,11 +66,11 @@ export async function POST(request: NextRequest) {
         // Validar que as quantidades dos viveiros somam o total
         const totalViveiros = item.viveiros.reduce(
           (sum, v) => sum + v.quantidade,
-          0
+          0,
         );
         if (totalViveiros !== item.quantidade) {
           throw new Error(
-            `A soma das quantidades dos viveiros (${totalViveiros}) não corresponde à quantidade do item (${item.quantidade}) para ${produto.nome}`
+            `A soma das quantidades dos viveiros (${totalViveiros}) não corresponde à quantidade do item (${item.quantidade}) para ${produto.nome}`,
           );
         }
 
@@ -82,12 +87,13 @@ export async function POST(request: NextRequest) {
 
           if (!estoque || estoque.quantidade < viveiro.quantidade) {
             throw new Error(
-              `Estoque insuficiente no viveiro para ${produto.nome}`
+              `Estoque insuficiente no viveiro para ${produto.nome}`,
             );
           }
         }
 
-        valorBruto += produto.precoUnitario * item.quantidade;
+        valorBruto +=
+          paraNumeroMonetario(produto.precoUnitario) * item.quantidade;
         totalUnidades += item.quantidade;
       }
 
@@ -107,9 +113,11 @@ export async function POST(request: NextRequest) {
       }
 
       // 3. Calcular valor total com desconto
-      const percentDesconto = desconto || 0;
-      const valorDesconto = valorBruto * (percentDesconto / 100);
-      const valorTotal = valorBruto - valorDesconto;
+      const percentDesconto = arredondarValorMonetario(desconto || 0);
+      const valorDesconto = arredondarValorMonetario(
+        valorBruto * (percentDesconto / 100),
+      );
+      const valorTotal = arredondarValorMonetario(valorBruto - valorDesconto);
 
       // 4. Gerar ticket único
       let ticket = gerarTicket();
@@ -128,9 +136,8 @@ export async function POST(request: NextRequest) {
         data: {
           ticket,
           qrCode: `pedido_${ticket}`,
-          valorTotal,
-          desconto: percentDesconto,
-          codigoBrinde: codigoBrinde || null,
+          valorTotal: arredondarValorMonetario(valorTotal),
+          desconto: arredondarValorMonetario(percentDesconto),
           pontosGerados: totalUnidades, // 1 ponto por unidade
         },
       });
@@ -141,13 +148,18 @@ export async function POST(request: NextRequest) {
           where: { id: item.produtoId },
         });
 
+        const precoUnitario = paraNumeroMonetario(produto!.precoUnitario);
+        const subtotal = arredondarValorMonetario(
+          precoUnitario * item.quantidade,
+        );
+
         const itemPedido = await tx.itemPedido.create({
           data: {
             pedidoId: novoPedido.id,
             produtoId: item.produtoId,
             quantidade: item.quantidade,
-            precoUnitario: produto!.precoUnitario,
-            subtotal: produto!.precoUnitario * item.quantidade,
+            precoUnitario: arredondarValorMonetario(produto!.precoUnitario),
+            subtotal: arredondarValorMonetario(subtotal),
           },
         });
 
@@ -179,7 +191,7 @@ export async function POST(request: NextRequest) {
           // Registrar movimentação
           await tx.movimentacaoEstoque.create({
             data: {
-              tipo: "SAIDA",
+              tipo: MOVIMENTACAO_ESTOQUE_TIPO.SAIDA,
               quantidade: viveiro.quantidade,
               motivo: "PEDIDO",
               estoqueId: estoque!.id,
@@ -215,11 +227,13 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(pedido, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Erro ao criar pedido:", error);
     return NextResponse.json(
-      { error: error.message || "Erro ao criar pedido" },
-      { status: 400 }
+      {
+        error: error instanceof Error ? error.message : "Erro ao criar pedido",
+      },
+      { status: 400 },
     );
   }
 }

@@ -16,12 +16,23 @@ import {
 import { Trash2, Plus, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import {
+  arredondarValorMonetario,
+  formatarMoeda,
+  formatarNumeroMonetario,
+  paraNumeroMonetario,
+  type ValorMonetario,
+} from "@/lib/helpers";
 
 interface Produto {
   id: string;
   nome: string;
-  precoUnitario: number;
-  estoques: { viveiroId: string; quantidade: number; viveiro: { id: string; nome: string } }[];
+  precoUnitario: ValorMonetario;
+  estoques: {
+    viveiroId: string;
+    quantidade: number;
+    viveiro: { id: string; nome: string };
+  }[];
 }
 
 interface ViveiroSelecionado {
@@ -34,7 +45,7 @@ interface ViveiroSelecionado {
 interface ItemPedido {
   produtoId: string;
   produtoNome: string;
-  precoUnitario: number;
+  precoUnitario: ValorMonetario;
   quantidade: number;
   viveiros: ViveiroSelecionado[];
 }
@@ -103,25 +114,28 @@ export default function NovoPedidoPage() {
   function atualizarQuantidadeViveiro(
     itemIndex: number,
     viveiroIndex: number,
-    quantidade: number
+    quantidade: number,
   ) {
     const novosItens = [...itens];
     const item = novosItens[itemIndex];
     item.viveiros[viveiroIndex].quantidade = Math.min(
       quantidade,
-      item.viveiros[viveiroIndex].estoqueDisponivel
+      item.viveiros[viveiroIndex].estoqueDisponivel,
     );
     item.quantidade = item.viveiros.reduce((sum, c) => sum + c.quantidade, 0);
     setItens(novosItens);
   }
 
   const subtotal = itens.reduce(
-    (sum, item) => sum + item.precoUnitario * item.quantidade,
-    0
+    (sum, item) =>
+      sum + paraNumeroMonetario(item.precoUnitario) * item.quantidade,
+    0,
   );
-  const descontoPercent = parseFloat(desconto) || 0;
-  const valorDesconto = subtotal * (descontoPercent / 100);
-  const valorTotal = subtotal - valorDesconto;
+  const descontoPercent = arredondarValorMonetario(parseFloat(desconto) || 0);
+  const valorDesconto = arredondarValorMonetario(
+    subtotal * (descontoPercent / 100),
+  );
+  const valorTotal = arredondarValorMonetario(subtotal - valorDesconto);
   const totalUnidades = itens.reduce((sum, item) => sum + item.quantidade, 0);
 
   async function handleSubmit() {
@@ -212,7 +226,7 @@ export default function NovoPedidoPage() {
                   .filter((p) => !itens.some((i) => i.produtoId === p.id))
                   .map((p) => (
                     <SelectItem key={p.id} value={p.id}>
-                      {p.nome} — R${p.precoUnitario.toFixed(2)}
+                      {p.nome} — {formatarMoeda(p.precoUnitario)}
                     </SelectItem>
                   ))}
               </SelectContent>
@@ -232,7 +246,7 @@ export default function NovoPedidoPage() {
             <div>
               <CardTitle className="text-lg">{item.produtoNome}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                R${item.precoUnitario.toFixed(2)} / unidade — Total:{" "}
+                {formatarMoeda(item.precoUnitario)} / unidade — Total:{" "}
                 {item.quantidade} un.
               </p>
             </div>
@@ -269,7 +283,7 @@ export default function NovoPedidoPage() {
                       atualizarQuantidadeViveiro(
                         itemIndex,
                         viveiroIndex,
-                        parseInt(e.target.value) || 0
+                        parseInt(e.target.value) || 0,
                       )
                     }
                     className="w-24"
@@ -325,17 +339,17 @@ export default function NovoPedidoPage() {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>R${subtotal.toFixed(2)}</span>
+                <span>{formatarMoeda(subtotal)}</span>
               </div>
               {descontoPercent > 0 && (
                 <div className="flex justify-between text-destructive">
                   <span>Desconto ({descontoPercent}%)</span>
-                  <span>-R${valorDesconto.toFixed(2)}</span>
+                  <span>-{formatarMoeda(valorDesconto)}</span>
                 </div>
               )}
               <div className="flex justify-between border-t pt-2 text-lg font-bold">
                 <span>Total</span>
-                <span>R${valorTotal.toFixed(2)}</span>
+                <span>{formatarMoeda(valorTotal)}</span>
               </div>
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>Pontos que serão gerados</span>
@@ -356,4 +370,3 @@ export default function NovoPedidoPage() {
     </div>
   );
 }
-

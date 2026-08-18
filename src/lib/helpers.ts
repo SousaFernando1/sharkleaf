@@ -1,4 +1,53 @@
-import { nanoid } from "nanoid";
+import {
+  getPedidoStatusBadgeVariant,
+  getPedidoStatusLabel,
+} from "@/lib/enums/pedido-status.enum";
+
+export type ValorMonetario =
+  | number
+  | string
+  | { toNumber(): number }
+  | null
+  | undefined;
+
+function isDecimalLike(valor: unknown): valor is { toNumber(): number } {
+  return (
+    typeof valor === "object" &&
+    valor !== null &&
+    "toNumber" in valor &&
+    typeof valor.toNumber === "function"
+  );
+}
+
+export function paraNumeroMonetario(valor: ValorMonetario): number {
+  if (typeof valor === "number") {
+    return Number.isFinite(valor) ? valor : 0;
+  }
+
+  if (typeof valor === "string") {
+    const numero = Number.parseFloat(valor.replace(",", "."));
+    return Number.isFinite(numero) ? numero : 0;
+  }
+
+  if (isDecimalLike(valor)) {
+    const numero = valor.toNumber();
+    return Number.isFinite(numero) ? numero : 0;
+  }
+
+  return 0;
+}
+
+export function arredondarValorMonetario(valor: ValorMonetario): number {
+  return Math.round(paraNumeroMonetario(valor) * 100) / 100;
+}
+
+export function normalizarValorMonetario(valor: ValorMonetario): string {
+  return arredondarValorMonetario(valor).toFixed(2);
+}
+
+export function formatarNumeroMonetario(valor: ValorMonetario): string {
+  return normalizarValorMonetario(valor);
+}
 
 /**
  * Gera um ticket alfanumérico curto e legível (ex: "ABC123")
@@ -84,7 +133,8 @@ export function gerarQRCodeUrl(pedidoId: string): string {
   }
 
   // Fallback
-  const baseUrl = nextAuthUrl || `http://localhost:${process.env.PORT || "3000"}`;
+  const baseUrl =
+    nextAuthUrl || `http://localhost:${process.env.PORT || "3000"}`;
   return `${baseUrl}/rastreio/${pedidoId}`;
 }
 
@@ -124,11 +174,11 @@ export function getTituloProgressao(pontos: number): {
 /**
  * Formata valor em reais
  */
-export function formatarMoeda(valor: number): string {
+export function formatarMoeda(valor: ValorMonetario): string {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-  }).format(valor);
+  }).format(arredondarValorMonetario(valor));
 }
 
 /**
@@ -149,33 +199,16 @@ export function formatarData(data: Date | string): string {
  * Retorna o label legível do status do pedido
  */
 export function getStatusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    RECEBIDO: "Pedido Recebido",
-    PRODUCAO: "Em Produção",
-    EMPACOTAMENTO: "Empacotamento",
-    PRONTO: "Concluído na Bancada",
-    CANCELADO: "Cancelado",
-  };
-  return labels[status] || status;
+  return getPedidoStatusLabel(status);
 }
 
 /**
  * Retorna a cor do badge do status
  */
 export function getStatusColor(
-  status: string
+  status: string,
 ): "default" | "secondary" | "destructive" | "outline" {
-  const colors: Record<
-    string,
-    "default" | "secondary" | "destructive" | "outline"
-  > = {
-    RECEBIDO: "outline",
-    PRODUCAO: "secondary",
-    EMPACOTAMENTO: "default",
-    PRONTO: "default",
-    CANCELADO: "destructive",
-  };
-  return colors[status] || "outline";
+  return getPedidoStatusBadgeVariant(status);
 }
 
 /**
@@ -183,9 +216,8 @@ export function getStatusColor(
  */
 export function calcularBrindesDisponiveis(
   pontosTotais: number,
-  brindesJaGerados: number
+  brindesJaGerados: number,
 ): number {
   const brindesPossiveis = Math.floor(pontosTotais / 100);
   return Math.max(0, brindesPossiveis - brindesJaGerados);
 }
-
