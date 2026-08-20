@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ClipboardList, User, ScanLine, Star } from "lucide-react";
+import { ClipboardList, User, ScanLine, Star, Gift } from "lucide-react";
 import { PedidoStatusButtons } from "@/components/admin/pedido-status-buttons";
 import { QRCodeDisplay } from "@/components/qr-code-display";
 import { gerarQRCodeUrl } from "@/lib/helpers";
@@ -39,6 +39,7 @@ async function getPedido(id: string) {
       },
       clienteResgate: true,
       escaneamentos: true,
+      brindeUsado: true,
     },
   });
 }
@@ -167,6 +168,25 @@ export default async function PedidoDetalhePage({
           </div>
         </CardContent>
       </Card>
+
+      {/* Brinde utilizado */}
+      {pedido.brindeUsado && (
+        <Card className="border-purple-200 bg-purple-50">
+          <CardHeader className="flex flex-row items-center gap-2">
+            <Gift className="h-5 w-5 text-purple-600" />
+            <CardTitle className="text-base">Brinde utilizado</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="font-mono text-lg font-bold">
+              {pedido.brindeUsado.codigo}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Benefício promocional de cortesia concedido sob responsabilidade
+              exclusiva do produtor — não altera o valor total do pedido.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Escaneamentos */}
       <Card>

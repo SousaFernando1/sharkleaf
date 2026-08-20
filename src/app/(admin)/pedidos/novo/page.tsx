@@ -57,6 +57,7 @@ export default function NovoPedidoPage() {
   const [desconto, setDesconto] = useState<string>("");
   const [codigoBrinde, setCodigoBrinde] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [brindeAtivo, setBrindeAtivo] = useState(false);
 
   // Produto sendo adicionado
   const [produtoSelecionado, setProdutoSelecionado] = useState<string>("");
@@ -65,6 +66,10 @@ export default function NovoPedidoPage() {
     fetch("/api/produtos")
       .then((r) => r.json())
       .then(setProdutos);
+
+    fetch("/api/config/brinde")
+      .then((r) => r.json())
+      .then((config) => setBrindeAtivo(Boolean(config.brindeAtivo)));
   }, []);
 
   function adicionarProduto() {
@@ -295,35 +300,46 @@ export default function NovoPedidoPage() {
         </Card>
       ))}
 
-      {/* Desconto e Brinde */}
+      {/* Desconto */}
       {itens.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Desconto e Brinde</CardTitle>
+            <CardTitle>Desconto</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Código de Brinde (opcional)</Label>
-                <Input
-                  value={codigoBrinde}
-                  onChange={(e) =>
-                    setCodigoBrinde(e.target.value.toUpperCase())
-                  }
-                  placeholder="Ex: BRINDE-ABC123"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Desconto (%)</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={desconto}
-                  onChange={(e) => setDesconto(e.target.value)}
-                  placeholder="0"
-                />
-              </div>
+            <div className="space-y-2 md:max-w-40">
+              <Label>Desconto (%)</Label>
+              <Input
+                type="number"
+                min="0"
+                max="100"
+                value={desconto}
+                onChange={(e) => setDesconto(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Brinde */}
+      {itens.length > 0 && brindeAtivo && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Brinde</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label>Código de Brinde (opcional)</Label>
+              <Input
+                value={codigoBrinde}
+                onChange={(e) => setCodigoBrinde(e.target.value.toUpperCase())}
+                placeholder="Ex: BRINDE-ABC123"
+              />
+              <p className="text-xs text-muted-foreground">
+                Benefício promocional de cortesia concedido sob responsabilidade
+                exclusiva do produtor — não aplica desconto no pedido.
+              </p>
             </div>
           </CardContent>
         </Card>

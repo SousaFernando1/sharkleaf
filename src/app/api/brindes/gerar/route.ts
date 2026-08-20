@@ -9,10 +9,7 @@ export async function POST(request: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user.clienteId) {
-      return NextResponse.json(
-        { error: "Não autorizado" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
     const cliente = await prisma.cliente.findUnique({
@@ -23,19 +20,29 @@ export async function POST(request: NextRequest) {
     if (!cliente) {
       return NextResponse.json(
         { error: "Cliente não encontrado" },
-        { status: 404 }
+        { status: 404 },
+      );
+    }
+
+    const produtor = await prisma.produtor.findFirst();
+
+    if (!produtor?.brindeAtivo) {
+      return NextResponse.json(
+        { error: "Recurso de brinde está desativado no momento" },
+        { status: 400 },
       );
     }
 
     const disponiveis = calcularBrindesDisponiveis(
       cliente.pontosTotais,
-      cliente.brindes.length
+      cliente.brindes.length,
+      produtor?.pontosParaBrinde ?? 100,
     );
 
     if (disponiveis <= 0) {
       return NextResponse.json(
         { error: "Você não tem brindes disponíveis para gerar" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -50,8 +57,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       { error: "Erro ao gerar brinde" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-
