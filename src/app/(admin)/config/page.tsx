@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Settings, User } from "lucide-react";
+import { BrindeConfigForm } from "@/components/admin/brinde-config-form";
 
 async function getProdutor() {
   return prisma.produtor.findFirst();
@@ -15,9 +16,7 @@ export default async function ConfigPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
-        <p className="text-muted-foreground">
-          Configurações gerais do sistema
-        </p>
+        <p className="text-muted-foreground">Configurações gerais do sistema</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -71,8 +70,11 @@ export default async function ConfigPage() {
               <p className="font-medium">1 ponto por unidade de produto</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Brindes</p>
-              <p className="font-medium">1 brinde a cada 100 pontos</p>
+              <p className="mb-2 text-sm text-muted-foreground">Brindes</p>
+              <BrindeConfigForm
+                brindeAtivoInicial={produtor?.brindeAtivo ?? false}
+                pontosParaBrindeInicial={produtor?.pontosParaBrinde ?? 100}
+              />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">
@@ -90,4 +92,3 @@ export default async function ConfigPage() {
     </div>
   );
 }
-

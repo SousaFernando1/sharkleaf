@@ -31,15 +31,17 @@ model Usuario {
 // ==========================================
 
 model Produtor {
-  id        String   @id @default(cuid())
-  nome      String
-  email     String   @unique
-  telefone  String?
-  endereco  String?
-  descricao String? // Para exibir no perfil público
-  logo      String? // URL da logo
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String   @id @default(cuid())
+  nome             String
+  email            String   @unique
+  telefone         String?
+  endereco         String?
+  descricao        String? // Para exibir no perfil público
+  logo             String? // URL da logo
+  brindeAtivo      Boolean  @default(false) // Se falso, novos pedidos não aceitam/geram brinde
+  pontosParaBrinde Int      @default(100) // Pontos necessários para gerar 1 brinde
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 // ==========================================

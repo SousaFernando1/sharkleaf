@@ -217,7 +217,8 @@ export function getStatusColor(
 export function calcularBrindesDisponiveis(
   pontosTotais: number,
   brindesJaGerados: number,
+  pontosParaBrinde: number,
 ): number {
-  const brindesPossiveis = Math.floor(pontosTotais / 100);
+  const brindesPossiveis = Math.floor(pontosTotais / pontosParaBrinde);
   return Math.max(0, brindesPossiveis - brindesJaGerados);
 }

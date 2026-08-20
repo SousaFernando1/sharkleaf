@@ -7,7 +7,6 @@ import { prisma } from "@/lib/prisma";
 import {
   getTituloProgressao,
   formatarData,
-  formatarMoeda,
   getStatusLabel,
   calcularBrindesDisponiveis,
 } from "@/lib/helpers";
@@ -31,6 +30,9 @@ async function getClienteData(clienteId: string) {
     where: { id: clienteId },
     include: {
       brindes: {
+        include: {
+          pedido: { select: { ticket: true } },
+        },
         orderBy: { createdAt: "desc" },
       },
       pedidosResgatados: {
@@ -48,6 +50,11 @@ async function getClienteData(clienteId: string) {
   return cliente;
 }
 
+async function getPontosParaBrinde() {
+  const produtor = await prisma.produtor.findFirst();
+  return produtor?.pontosParaBrinde ?? 100;
+}
+
 export default async function PortalPage() {
   const session = await getServerSession(authOptions);
 
@@ -61,10 +68,12 @@ export default async function PortalPage() {
     redirect("/login");
   }
 
+  const pontosParaBrinde = await getPontosParaBrinde();
   const titulo = getTituloProgressao(cliente.pontosTotais);
   const brindesDisponiveis = calcularBrindesDisponiveis(
     cliente.pontosTotais,
     cliente.brindes.length,
+    pontosParaBrinde,
   );
 
   // Progresso para o próximo título
@@ -178,8 +187,8 @@ export default async function PortalPage() {
           <CardContent>
             {cliente.brindes.length === 0 ? (
               <p className="py-4 text-center text-muted-foreground">
-                Você ainda não tem códigos de brinde. Acumule 100 pontos para
-                ganhar o primeiro!
+                Você ainda não tem códigos de brinde. Acumule {pontosParaBrinde}{" "}
+                pontos para ganhar o primeiro!
               </p>
             ) : (
               <div className="space-y-3">
@@ -199,6 +208,11 @@ export default async function PortalPage() {
                       <p className="text-sm text-muted-foreground">
                         Gerado em: {formatarData(brinde.createdAt)}
                       </p>
+                      {brinde.usado && brinde.pedido && (
+                        <p className="text-sm text-muted-foreground">
+                          Utilizado no pedido #{brinde.pedido.ticket}
+                        </p>
+                      )}
                     </div>
                     <Badge variant={brinde.usado ? "secondary" : "default"}>
                       {brinde.usado ? "✅ Utilizado" : "🎁 Disponível"}

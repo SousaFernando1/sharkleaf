@@ -99,6 +99,12 @@ export async function POST(request: NextRequest) {
 
       // 2. Validar código de brinde (se informado)
       if (codigoBrinde) {
+        const produtor = await tx.produtor.findFirst();
+
+        if (!produtor?.brindeAtivo) {
+          throw new Error("Recurso de brinde está desativado no momento");
+        }
+
         const brinde = await tx.brinde.findUnique({
           where: { codigo: codigoBrinde },
         });

@@ -71,23 +71,33 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Verificar se deve gerar brinde (a cada 100 pontos)
-      const brindesExistentes = await tx.brinde.count({
-        where: { clienteId: session.user.clienteId! },
-      });
+      // Verificar se deve gerar brinde (conforme configuração do produtor)
+      const produtor = await tx.produtor.findFirst();
+      const brindeAtivo = produtor?.brindeAtivo ?? false;
+      const pontosParaBrinde = produtor?.pontosParaBrinde ?? 100;
 
-      const brindesPossiveis = Math.floor(clienteAtualizado.pontosTotais / 100);
+      let brindesParaGerar = 0;
 
-      const brindesParaGerar = brindesPossiveis - brindesExistentes;
-
-      // Gerar brindes necessários
-      for (let i = 0; i < brindesParaGerar; i++) {
-        await tx.brinde.create({
-          data: {
-            codigo: gerarCodigoBrinde(),
-            clienteId: session.user.clienteId!,
-          },
+      if (brindeAtivo) {
+        const brindesExistentes = await tx.brinde.count({
+          where: { clienteId: session.user.clienteId! },
         });
+
+        const brindesPossiveis = Math.floor(
+          clienteAtualizado.pontosTotais / pontosParaBrinde,
+        );
+
+        brindesParaGerar = brindesPossiveis - brindesExistentes;
+
+        // Gerar brindes necessários
+        for (let i = 0; i < brindesParaGerar; i++) {
+          await tx.brinde.create({
+            data: {
+              codigo: gerarCodigoBrinde(),
+              clienteId: session.user.clienteId!,
+            },
+          });
+        }
       }
 
       return {

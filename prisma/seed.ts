@@ -47,6 +47,8 @@ async function main() {
       endereco: "Rodovia BR-101, Tubarão - SC",
       descricao:
         "Viveiro especializado em produção de mudas de Eucalipto e espécies nativas. Comprometidos com a qualidade e sustentabilidade.",
+      brindeAtivo: false,
+      pontosParaBrinde: 100,
     },
   });
   console.log("✅ Produtor criado:", produtor.nome);
