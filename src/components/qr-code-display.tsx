@@ -3,8 +3,9 @@
 import { QRCodeSVG } from "qrcode.react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { QrCode, Download, Printer } from "lucide-react";
+import { QrCode, Download, Printer, Copy } from "lucide-react";
 import { useRef } from "react";
+import { toast } from "sonner";
 
 interface QRCodeDisplayProps {
   url: string;
@@ -73,7 +74,9 @@ export function QRCodeDisplay({ url, ticket, size = 200 }: QRCodeDisplayProps) {
 
     const svgData = new XMLSerializer().serializeToString(svgEl);
     const img = new Image();
-    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    const svgBlob = new Blob([svgData], {
+      type: "image/svg+xml;charset=utf-8",
+    });
     const url2 = URL.createObjectURL(svgBlob);
 
     img.onload = () => {
@@ -104,6 +107,27 @@ export function QRCodeDisplay({ url, ticket, size = 200 }: QRCodeDisplayProps) {
     img.src = url2;
   }
 
+  async function handleCopiarLink() {
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(qrUrl);
+      } else {
+        // Fallback para contexto sem Clipboard API (ex: http em rede local)
+        const textarea = document.createElement("textarea");
+        textarea.value = qrUrl;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+      toast.success("Link do rastreio copiado para área de transferência");
+    } catch {
+      toast.error("Não foi possível copiar o link");
+    }
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-2 space-y-0 pb-2">
@@ -111,10 +135,7 @@ export function QRCodeDisplay({ url, ticket, size = 200 }: QRCodeDisplayProps) {
         <CardTitle className="text-sm font-medium">QR Code do Pedido</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-4">
-        <div
-          ref={qrRef}
-          className="rounded-lg border bg-white p-4"
-        >
+        <div ref={qrRef} className="rounded-lg border bg-white p-4">
           <QRCodeSVG
             value={qrUrl}
             size={size}
@@ -128,7 +149,7 @@ export function QRCodeDisplay({ url, ticket, size = 200 }: QRCodeDisplayProps) {
         <p className="text-center text-xs text-muted-foreground">
           Escaneie para rastrear o pedido
         </p>
-        <div className="flex gap-2">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <Button variant="outline" size="sm" onClick={handlePrint}>
             <Printer className="mr-1 h-4 w-4" />
             Imprimir
@@ -137,9 +158,12 @@ export function QRCodeDisplay({ url, ticket, size = 200 }: QRCodeDisplayProps) {
             <Download className="mr-1 h-4 w-4" />
             Baixar PNG
           </Button>
+          <Button variant="outline" size="sm" onClick={handleCopiarLink}>
+            <Copy className="mr-1 h-4 w-4" />
+            Copiar Link
+          </Button>
         </div>
       </CardContent>
     </Card>
   );
 }
-
