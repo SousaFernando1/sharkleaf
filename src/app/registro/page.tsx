@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,9 +10,15 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Leaf } from "lucide-react";
 import { toast } from "sonner";
+import { isSafeRedirectPath } from "@/lib/helpers";
 
-export default function RegistroPage() {
+function RegistroForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrlParam = searchParams.get("callbackUrl");
+  const callbackUrl = isSafeRedirectPath(callbackUrlParam)
+    ? callbackUrlParam
+    : null;
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,7 +52,7 @@ export default function RegistroPage() {
       });
 
       if (result?.ok) {
-        router.push("/portal");
+        router.push(callbackUrl || "/portal");
         router.refresh();
       }
     } catch {
@@ -131,5 +137,13 @@ export default function RegistroPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function RegistroPage() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <RegistroForm />
+    </Suspense>
   );
 }

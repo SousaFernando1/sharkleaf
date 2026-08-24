@@ -10,11 +10,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Leaf } from "lucide-react";
 import { toast } from "sonner";
 import { USUARIO_TIPO } from "@/lib/enums/usuario-tipo.enum";
+import { isSafeRedirectPath } from "@/lib/helpers";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl");
+  const callbackUrlParam = searchParams.get("callbackUrl");
+  const callbackUrl = isSafeRedirectPath(callbackUrlParam)
+    ? callbackUrlParam
+    : null;
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -126,7 +130,11 @@ function LoginForm() {
         <div className="mt-4 text-center text-sm text-muted-foreground">
           Não tem uma conta?{" "}
           <Link
-            href="/registro"
+            href={
+              callbackUrl
+                ? `/registro?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                : "/registro"
+            }
             className="font-medium text-green-600 hover:underline"
           >
             Criar conta

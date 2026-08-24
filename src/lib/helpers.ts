@@ -222,3 +222,12 @@ export function calcularBrindesDisponiveis(
   const brindesPossiveis = Math.floor(pontosTotais / pontosParaBrinde);
   return Math.max(0, brindesPossiveis - brindesJaGerados);
 }
+
+/**
+ * Valida que a callbackUrl é um caminho local seguro, evitando open redirect
+ */
+export function isSafeRedirectPath(
+  url: string | null | undefined,
+): url is string {
+  return !!url && url.startsWith("/") && !url.startsWith("//");
+}
