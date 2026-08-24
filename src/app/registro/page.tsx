@@ -10,14 +10,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Leaf } from "lucide-react";
 import { toast } from "sonner";
-import { isSafeRedirectPath } from "@/lib/helpers";
+import { isSafeRedirectPath, toRelativePath } from "@/lib/helpers";
 
 function RegistroForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrlParam = searchParams.get("callbackUrl");
   const callbackUrl = isSafeRedirectPath(callbackUrlParam)
-    ? callbackUrlParam
+    ? toRelativePath(callbackUrlParam)
     : null;
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
