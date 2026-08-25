@@ -10,14 +10,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Leaf } from "lucide-react";
 import { toast } from "sonner";
-import { isSafeRedirectPath, toRelativePath } from "@/lib/helpers";
+import { isSafeRedirectPath } from "@/lib/helpers";
 
 function RegistroForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrlParam = searchParams.get("callbackUrl");
   const callbackUrl = isSafeRedirectPath(callbackUrlParam)
-    ? toRelativePath(callbackUrlParam)
+    ? callbackUrlParam
     : null;
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -52,6 +52,8 @@ function RegistroForm() {
       });
 
       if (result?.ok) {
+        // signIn() já atualiza a sessão local via __NEXTAUTH._getSession,
+        // então router.push (sem reload completo) já reflete o novo estado
         router.push(callbackUrl || "/portal");
         router.refresh();
       }

@@ -10,13 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Leaf } from "lucide-react";
 import { toast } from "sonner";
 import { USUARIO_TIPO } from "@/lib/enums/usuario-tipo.enum";
-import { isSafeRedirectPath, toRelativePath } from "@/lib/helpers";
+import { isSafeRedirectPath } from "@/lib/helpers";
 
 function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrlParam = searchParams.get("callbackUrl");
   const callbackUrl = isSafeRedirectPath(callbackUrlParam)
-    ? toRelativePath(callbackUrlParam)
+    ? callbackUrlParam
     : null;
   const [loading, setLoading] = useState(false);
 

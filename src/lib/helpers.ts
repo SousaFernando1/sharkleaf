@@ -224,34 +224,15 @@ export function calcularBrindesDisponiveis(
 }
 
 /**
- * Valida que a callbackUrl é um caminho local seguro, evitando open redirect.
- * Aceita tanto caminhos relativos quanto URLs absolutas do mesmo domínio
- * (o NextAuth expande callbackUrl relativo para absoluto ao redirecionar para pages.signIn).
+ * Valida que a callbackUrl é um caminho local relativo, evitando open redirect
  */
 export function isSafeRedirectPath(
   url: string | null | undefined,
 ): url is string {
-  if (!url || url.startsWith("//")) return false;
-  if (url.startsWith("/")) return true;
-  if (typeof window === "undefined") return false;
-  try {
-    return (
-      new URL(url, window.location.origin).origin === window.location.origin
-    );
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Reduz uma callbackUrl (relativa ou absoluta do mesmo domínio) ao caminho local
- */
-export function toRelativePath(url: string): string {
-  if (url.startsWith("/")) return url;
-  try {
-    const parsed = new URL(url);
-    return parsed.pathname + parsed.search + parsed.hash;
-  } catch {
-    return url;
-  }
+  return (
+    !!url &&
+    url.startsWith("/") &&
+    !url.startsWith("//") &&
+    !url.startsWith("/\\")
+  );
 }
