@@ -1,7 +1,8 @@
 "use client";
 
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -17,6 +18,7 @@ export function ResgatarPontosButton({
   resgatado,
 }: ResgatarPontosButtonProps) {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [jaResgatado, setJaResgatado] = useState(resgatado);
 
@@ -39,7 +41,13 @@ export function ResgatarPontosButton({
   if (!session) {
     return (
       <Button
-        onClick={() => signIn(undefined, { callbackUrl: window.location.href })}
+        onClick={() => {
+          // Navega direto para o /login local com callbackUrl relativo,
+          // evitando o round-trip do NextAuth por /api/auth/signin (que
+          // reconverte o callbackUrl relativo em URL absoluta)
+          const callbackUrl = window.location.pathname + window.location.search;
+          router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+        }}
         className="w-full bg-green-600 hover:bg-green-700"
       >
         Fazer Login para Resgatar {pontos} Pontos
@@ -82,4 +90,3 @@ export function ResgatarPontosButton({
     </Button>
   );
 }
-

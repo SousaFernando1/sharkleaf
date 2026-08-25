@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,11 +10,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Leaf } from "lucide-react";
 import { toast } from "sonner";
 import { USUARIO_TIPO } from "@/lib/enums/usuario-tipo.enum";
+import { isSafeRedirectPath } from "@/lib/helpers";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl");
+  const callbackUrlParam = searchParams.get("callbackUrl");
+  const callbackUrl = isSafeRedirectPath(callbackUrlParam)
+    ? callbackUrlParam
+    : null;
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -53,8 +56,11 @@ function LoginForm() {
       // NextAuth returns 200 on success, 401 on failure
       // With redirect: "manual", successful auth returns 200 or 302
       if (res.status === 200 || res.type === "opaqueredirect") {
+        // Navegação completa (não router.push) para o SessionProvider
+        // remontar e buscar a sessão nova — client useSession() não
+        // revalida sozinho após um login feito fora do signIn() do NextAuth
         if (callbackUrl) {
-          router.push(callbackUrl);
+          window.location.href = callbackUrl;
         } else {
           // Buscar a sessão para determinar o tipo de usuário
           const sessionRes = await fetch("/api/auth/session");
@@ -63,9 +69,8 @@ function LoginForm() {
             session?.user?.tipo === USUARIO_TIPO.ADMIN
               ? "/dashboard"
               : "/portal";
-          router.push(destino);
+          window.location.href = destino;
         }
-        router.refresh();
       } else {
         toast.error("Email ou senha inválidos");
       }
@@ -126,7 +131,11 @@ function LoginForm() {
         <div className="mt-4 text-center text-sm text-muted-foreground">
           Não tem uma conta?{" "}
           <Link
-            href="/registro"
+            href={
+              callbackUrl
+                ? `/registro?callbackUrl=${encodeURIComponent(callbackUrl)}`
+                : "/registro"
+            }
             className="font-medium text-green-600 hover:underline"
           >
             Criar conta
